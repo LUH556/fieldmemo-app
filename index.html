@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FIELDMEMO</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/500.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--s1:#141414;--s2:#1c1c1c;--s3:#242424;
+  --border:#2c2c2c;--accent:#f59e0b;--accent2:#d97706;
+  --text:#e5e5e5;--muted:#6b7280;--faint:#252525;
+  --danger:#ef4444;--ok:#22c55e;--info:#60a5fa;--purple:#a78bfa;
+  --mono:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
+  --hdr:50px;--nav:58px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto}
+
+/* Header */
+header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--s1)}
+.logo{font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.profile-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.profile-badge.private{border-color:rgba(96,165,250,.4);color:var(--info)}
+.profile-badge.work{border-color:rgba(167,139,250,.4);color:var(--purple)}
+.hdr-status{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}
+
+/* Panels */
+.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+.panel.active{display:block}
+
+/* Tab bar */
+.tabbar{height:var(--nav);flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1)}
+.tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:0}
+.tabbar button.active{color:var(--accent)}
+.tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* Fields */
+.field{padding:12px 16px;border-bottom:1px solid var(--border)}
+.field-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+textarea,input[type=text],input[type=password]{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;padding:10px 12px;border-radius:6px;-webkit-appearance:none;outline:none;transition:border-color .15s;resize:none}
+textarea:focus,input:focus{border-color:var(--accent)}
+textarea{line-height:1.65}
+
+/* Timestamp */
+.ts-block{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:baseline;gap:12px}
+.ts-time{font-family:var(--mono);font-size:24px;color:var(--text);letter-spacing:.03em}
+.ts-date{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* Tags */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.tag-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
+.tag-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
+.tag-input-row{display:flex;gap:8px;margin-top:4px}
+.tag-input-row input{flex:1;font-size:13px}
+
+/* Buttons */
+.btn-primary{display:block;width:calc(100% - 32px);margin:14px 16px;padding:14px;border:none;border-radius:8px;background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s}
+.btn-primary:active{transform:scale(.98);background:var(--accent2)}
+.btn-primary:disabled{background:var(--faint);color:var(--muted);cursor:not-allowed}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap}
+.btn-sm:active{border-color:var(--accent);color:var(--accent)}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm svg{width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.btn-sm.danger{border-color:rgba(239,68,68,.4);color:var(--danger)}
+.btn-sm.ok-color{border-color:rgba(34,197,94,.4);color:var(--ok)}
+
+/* Voice */
+.record-section{padding:12px 16px;border-bottom:1px solid var(--border)}
+.record-btn-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.record-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .2s;flex-shrink:0}
+.record-btn svg{width:20px;height:20px;stroke:var(--text);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.record-btn.recording{background:var(--danger);animation:pulse 1.4s ease-in-out infinite}
+.record-btn.recording svg{stroke:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+.record-status{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.record-status.active{color:var(--danger)}
+.transcript-box{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-height:60px;font-size:14px;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-all}
+
+/* Photo panel */
+.capture-row{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.capture-row label{flex:1}
+.capture-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;padding:18px 10px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--mono);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.capture-btn:active,.capture-btn:hover{border-color:var(--accent);color:var(--accent)}
+.capture-btn svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+.photo-preview-wrap{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.photo-preview-wrap.visible{display:block}
+.photo-preview{width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:var(--s2);display:block}
+.photo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.photo-storage-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* OCR progress */
+.ocr-progress-wrap{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.ocr-progress-wrap.visible{display:block}
+.ocr-progress-bar-bg{background:var(--s2);border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px}
+.ocr-progress-bar{background:var(--accent);height:4px;border-radius:4px;width:0%;transition:width .3s}
+.ocr-progress-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ocr-engine-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:10px;margin-left:8px}
+.ocr-engine-badge.tesseract{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--ok)}
+.ocr-engine-badge.claude{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--accent)}
+
+/* OCR result */
+.ocr-result{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.ocr-result.visible{display:block}
+.ocr-section{margin-bottom:10px}
+.ocr-section-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.ocr-text{font-size:13px;line-height:1.65;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;word-break:break-all;white-space:pre-wrap;max-height:120px;overflow-y:auto}
+
+/* Storage indicator */
+.storage-info{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.storage-item{flex:1;background:var(--s2);border-radius:6px;padding:8px 10px;border:1px solid var(--border)}
+.storage-item-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.storage-item-val{font-family:var(--mono);font-size:12px;color:var(--text)}
+.storage-item-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+
+/* Timeline */
+.tl-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
+.tl-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.filter-bar{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:var(--sans);transition:all .15s}
+.filter-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
+.memo-card{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s}
+.memo-card:active{background:var(--s2)}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.card-ts{font-family:var(--mono);font-size:11px;color:var(--accent);flex:1}
+.card-type{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px}
+.card-type.memo{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:var(--info)}
+.card-type.photo{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:var(--purple)}
+.card-sync{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.card-sync.ok{color:var(--ok)}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.card-tag{padding:2px 7px;border-radius:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);color:var(--accent);font-size:11px}
+.card-body{font-size:14px;line-height:1.6;color:var(--text);word-break:break-all}
+.card-body.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-img-thumb{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px;background:var(--s2)}
+.card-img-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
+.empty-state{padding:56px 24px;text-align:center;color:var(--muted);font-size:14px;line-height:2}
+.empty-icon{font-family:var(--mono);font-size:26px;color:var(--faint);margin-bottom:10px}
+
+/* Settings */
+.sg{padding:14px 16px;border-bottom:1px solid var(--border)}
+.sg-title{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.sr{margin-bottom:12px}
+.sr-label{font-size:13px;color:var(--muted);margin-bottom:5px}
+.sr-note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;opacity:.65}
+.profile-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.profile-tab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.profile-tab.active.private{background:rgba(96,165,250,.15);color:var(--info)}
+.profile-tab.active.work{background:rgba(167,139,250,.15);color:var(--purple)}
+.settings-actions{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+
+/* Toast */
+#toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:var(--mono);padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:200;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:var(--ok);color:var(--ok)}
+#toast.err{border-color:var(--danger);color:var(--danger)}
+#toast.info{border-color:var(--info);color:var(--info)}
+
+/* Loader */
+#loader{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:300;flex-direction:column;gap:12px}
+#loader.show{display:flex}
+.loader-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.loader-msg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;max-width:240px;line-height:1.5}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <span class="logo">FIELDMEMO</span>
+    <div class="hdr-right">
+      <span class="profile-badge private" id="profile-badge" onclick="showPanel('settings')">PRIVATE</span>
+      <div class="hdr-status">
+        <span class="dot" id="gh-dot"></span><span id="gh-label">GH未設定</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ MEMO panel ══ -->
+  <div id="panel-memo" class="panel active">
+    <div class="ts-block">
+      <span class="ts-time" id="ts-time">--:--</span>
+      <span class="ts-date" id="ts-date"></span>
+    </div>
+    <div class="field">
+      <div class="field-label">テキストメモ</div>
+      <textarea id="memo-text" placeholder="気づき・観察・質問メモ…" rows="4"></textarea>
+    </div>
+    <div class="record-section">
+      <div class="field-label">ボイスメモ</div>
+      <div class="record-btn-wrap">
+        <button class="record-btn" id="record-btn" onclick="toggleRecording()">
+          <svg id="rec-icon-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <svg id="rec-icon-stop" viewBox="0 0 24 24" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+        <div>
+          <div class="record-status" id="record-status">タップして録音開始</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="rec-timer"></div>
+        </div>
+        <button class="btn-sm" onclick="clearTranscript()" style="margin-left:auto">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          クリア
+        </button>
+      </div>
+      <div class="transcript-box" id="transcript-box">
+        <span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tags-wrap" id="memo-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="memo-tag-input" placeholder="カスタムタグ…">
+        <button class="btn-sm" onclick="addTag('memo')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>追加
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" id="memo-save-btn" onclick="saveMemo()">メモを保存</button>
+  </div>
+
+  <!-- ══ PHOTO panel ══ -->
+  <div id="panel-photo" class="panel">
+    <div class="ts-block">
+      <span class="ts-time" id="ts-time2">--:--</span>
+      <span class="ts-date" id="ts-date2"></span>
+    </div>
+
+    <!-- Storage flow indicator -->
+    <div class="storage-info">
+      <div class="storage-item">
+        <div class="storage-item-label">端末（IndexedDB）</div>
+        <div class="storage-item-val">JSON + 元画像</div>
+        <div class="storage-item-sub">ローカルで画像閲覧可</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--muted);font-size:18px;padding:0 4px">→</div>
+      <div class="storage-item">
+        <div class="storage-item-label">GitHub（クラウド）</div>
+        <div class="storage-item-val">JSONのみ</div>
+        <div class="storage-item-sub">OCRテキスト・タグのみ</div>
+      </div>
+    </div>
+
+    <div class="capture-row">
+      <label>
+        <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none" onchange="onPhotoSelected(this)">
+        <div class="capture-btn">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          カメラ撮影
+        </div>
+      </label>
+      <label>
+        <input type="file" accept="image/*" id="gallery-input" style="display:none" onchange="onPhotoSelected(this)">
+        <div class="capture-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          ギャラリー / スクショ
+        </div>
+      </label>
+    </div>
+
+    <div class="photo-preview-wrap" id="photo-preview-wrap">
+      <img id="photo-preview" class="photo-preview" src="" alt="">
+      <div class="photo-actions">
+        <button class="btn-sm" id="reanalyze-btn" onclick="runOCR()" style="display:none">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          再解析
+        </button>
+        <button class="btn-sm danger" onclick="clearPhoto()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          クリア
+        </button>
+      </div>
+    </div>
+
+    <!-- OCR progress -->
+    <div class="ocr-progress-wrap" id="ocr-progress-wrap">
+      <div style="display:flex;align-items:center;margin-bottom:8px">
+        <span class="field-label" style="margin:0">OCR解析中</span>
+        <span class="ocr-engine-badge" id="ocr-engine-badge">Tesseract.js</span>
+      </div>
+      <div class="ocr-progress-bar-bg"><div class="ocr-progress-bar" id="ocr-progress-bar"></div></div>
+      <div class="ocr-progress-label" id="ocr-progress-label">初期化中…</div>
+    </div>
+
+    <!-- OCR result -->
+    <div class="ocr-result" id="ocr-result">
+      <div class="ocr-section">
+        <div class="ocr-section-label">抽出テキスト
+          <span class="ocr-engine-badge" id="ocr-result-badge">Tesseract.js</span>
+        </div>
+        <div class="ocr-text" id="ocr-text"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">メモ（任意）</div>
+      <textarea id="photo-note" placeholder="補足メモ…" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tags-wrap" id="photo-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="photo-tag-input" placeholder="カスタムタグ…">
+        <button class="btn-sm" onclick="addTag('photo')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>追加
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" id="photo-save-btn" onclick="savePhoto()" disabled>OCR完了後に保存できます</button>
+  </div>
+
+  <!-- ══ HISTORY panel ══ -->
+  <div id="panel-history" class="panel">
+    <div class="tl-toolbar">
+      <span class="tl-count" id="tl-count">0 件</span>
+      <button class="btn-sm" onclick="ghPull()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        GitHub同期
+      </button>
+    </div>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div id="timeline-list"></div>
+  </div>
+
+  <!-- ══ SETTINGS panel ══ -->
+  <div id="panel-settings" class="panel">
+    <div class="sg">
+      <div class="sg-title">環境プロファイル</div>
+      <div class="profile-tabs">
+        <button class="profile-tab active private" id="tab-private" onclick="switchProfile('private')">プライベート</button>
+        <button class="profile-tab work" id="tab-work" onclick="switchProfile('work')">業務</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6" id="profile-description">
+        OCRエンジン：Tesseract.js（ブラウザ内・無料）<br>
+        保存先：GitHub
+      </div>
+    </div>
+
+    <!-- Private settings -->
+    <div id="settings-private">
+      <div class="sg">
+        <div class="sg-title">GitHub（プライベート）</div>
+        <div class="sr">
+          <div class="sr-label">Personal Access Token</div>
+          <input type="password" id="s-token" placeholder="ghp_xxxxxxxxxxxx">
+          <div class="sr-note">Settings → Developer settings → Personal access tokens → Fine-grained tokens<br>Contents の Read/Write 権限が必要。</div>
+        </div>
+        <div class="sr">
+          <div class="sr-label">ユーザー名（Owner）</div>
+          <input type="text" id="s-owner" placeholder="your-username">
+        </div>
+        <div class="sr">
+          <div class="sr-label">リポジトリ名</div>
+          <input type="text" id="s-repo" placeholder="fieldmemo-data">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ブランチ</div>
+          <input type="text" id="s-branch" placeholder="main">
+        </div>
+      </div>
+    </div>
+
+    <!-- Work settings -->
+    <div id="settings-work" style="display:none">
+      <div class="sg">
+        <div class="sg-title">Claude API（業務）</div>
+        <div class="sr">
+          <div class="sr-label">法人APIキー</div>
+          <input type="password" id="s-claude-work" placeholder="sk-ant-api03-...">
+          <div class="sr-note">OCR・要約に使用します。Enterpriseプランの管理者から取得してください。</div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">OneDrive（業務）</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;padding-bottom:8px">
+          OneDrive対応は後から実装予定です。<br>
+          現在は業務モードでもGitHubに保存されます。<br>
+          （業務用GitHubリポジトリを設定してください）
+        </div>
+        <div class="sr">
+          <div class="sr-label">Personal Access Token（業務用）</div>
+          <input type="password" id="s-token-work" placeholder="ghp_xxxxxxxxxxxx">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ユーザー名（Owner）</div>
+          <input type="text" id="s-owner-work" placeholder="work-username">
+        </div>
+        <div class="sr">
+          <div class="sr-label">リポジトリ名</div>
+          <input type="text" id="s-repo-work" placeholder="fieldmemo-work">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ブランチ</div>
+          <input type="text" id="s-branch-work" placeholder="main">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn-sm" onclick="saveSettings()">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        設定保存
+      </button>
+      <button class="btn-sm" onclick="testGH()">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        GitHub接続テスト
+      </button>
+    </div>
+
+    <div class="sg">
+      <div class="sg-title">タグプリセット（共通）</div>
+      <div class="sr">
+        <textarea id="s-tags" rows="3" placeholder="軸A,軸B,軸C,要フォロー,競合,パートナー" style="min-height:64px;font-size:13px"></textarea>
+        <div class="sr-note">カンマ区切り。変更後「タグ保存」を押してください。</div>
+      </div>
+      <button class="btn-sm" onclick="saveTags()" style="margin-top:4px">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        タグ保存
+      </button>
+    </div>
+
+    <div class="sg">
+      <div class="sg-title">データ操作</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="exportAll()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Markdown出力
+        </button>
+        <button class="btn-sm danger" onclick="clearLocal()">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          ローカル削除
+        </button>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <nav class="tabbar">
+    <button id="tab-btn-memo" class="active" onclick="showPanel('memo')">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      メモ
+    </button>
+    <button id="tab-btn-photo" onclick="showPanel('photo')">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      写真
+    </button>
+    <button id="tab-btn-history" onclick="showPanel('history')">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      履歴
+    </button>
+    <button id="tab-btn-settings" onclick="showPanel('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      設定
+    </button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+<div id="loader"><div class="loader-ring"></div><div class="loader-msg" id="loader-msg">処理中…</div></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  panel: 'memo',
+  activeProfile: 'private',
+  filterTag: null,
+  expandedId: null,
+  memoTags: new Set(),
+  photoTags: new Set(),
+  presetTags: ['軸A','軸B','軸C','要フォロー','競合','パートナー'],
+  profiles: {
+    private: { gh: {token:'',owner:'',repo:'',branch:'main'}, claudeKey: '' },
+    work:    { gh: {token:'',owner:'',repo:'',branch:'main'}, claudeKey: '' },
+  },
+  photoData: null,      // compressed base64 (stays in IndexedDB only)
+  photoMime: 'image/jpeg',
+  ocrText: '',
+  ocrDone: false,
+  isRecording: false,
+  recognition: null,
+  mediaRecorder: null,
+  recTimerInterval: null,
+  recSeconds: 0,
+  transcriptFinal: '',
+  transcriptInterim: '',
+  allMemos: [],
+  tesseractWorker: null,
+};
+
+// Active profile shortcuts
+function gh(){ return S.profiles[S.activeProfile].gh }
+function claudeKey(){ return S.profiles[S.activeProfile].claudeKey }
+function ocrEngine(){ return S.activeProfile === 'work' && claudeKey() ? 'claude' : 'tesseract' }
+
+// ============================================================
+// INDEXEDDB
+// ============================================================
+let db;
+function initDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open('fieldmemo_v3', 1);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('items')){
+        const st = d.createObjectStore('items',{keyPath:'id'});
+        st.createIndex('ts','timestamp');
+      }
+      if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv',{keyPath:'k'});
+    };
+    r.onsuccess = e => { db = e.target.result; res(); };
+    r.onerror = () => rej(r.error);
+  });
+}
+function txStore(store, mode='readonly'){ return db.transaction(store,mode).objectStore(store) }
+function dbPut(val){ return new Promise((res,rej)=>{ const r=txStore('items','readwrite').put(val); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) }) }
+function dbAll(){ return new Promise((res,rej)=>{ const r=txStore('items').index('ts').getAll(); r.onsuccess=()=>res(r.result.slice().reverse()); r.onerror=()=>rej(r.error) }) }
+function dbClear(){ return new Promise((res,rej)=>{ const r=txStore('items','readwrite').clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) }) }
+const kvGet = k => new Promise((res,rej)=>{ const r=txStore('kv').get(k); r.onsuccess=()=>res(r.result?.v); r.onerror=()=>rej(r.error) });
+const kvSet = (k,v) => new Promise((res,rej)=>{ const r=txStore('kv','readwrite').put({k,v}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+
+// ============================================================
+// GITHUB API
+// ============================================================
+function ghH(){ return {'Authorization':`token ${gh().token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'} }
+function toB64(str){ return btoa(unescape(encodeURIComponent(str))) }
+
+async function ghWriteJSON(item){
+  const g = gh();
+  if(!g.token||!g.owner||!g.repo) return {ok:false,reason:'unconfigured'};
+  // Strip imageData — only text/metadata goes to GitHub
+  const payload = {...item};
+  delete payload.imageData;
+  const path = `memos/${item.id}.json`;
+  const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/${path}`;
+  const body = {message:`memo: ${item.id}`,content:toB64(JSON.stringify(payload,null,2)),branch:g.branch||'main'};
+  try{ const chk=await fetch(url,{headers:ghH()}); if(chk.ok){ const ex=await chk.json(); body.sha=ex.sha } }catch(_){}
+  const r = await fetch(url,{method:'PUT',headers:ghH(),body:JSON.stringify(body)});
+  return {ok:r.ok,status:r.status};
+}
+
+async function ghPull(){
+  const g = gh();
+  if(!g.token||!g.owner||!g.repo){ toast('GitHub設定が未完了です','err'); return }
+  showLoader('GitHubから取得中…');
+  try{
+    const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/memos?ref=${g.branch||'main'}`;
+    const r = await fetch(url,{headers:ghH()});
+    if(r.status===404){ hideLoader(); toast('memosフォルダがまだありません','info'); return }
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const files = await r.json();
+    let added = 0;
+    for(const f of files){
+      if(!f.name.endsWith('.json')) continue;
+      const jr = await fetch(f.download_url);
+      const item = await jr.json();
+      item.ghSynced = true;
+      // Note: imageData is NOT in GitHub JSON, so pulled items won't have local image
+      await dbPut(item);
+      added++;
+    }
+    hideLoader(); toast(`${added}件を同期しました`,'ok');
+    if(S.panel==='history') loadHistory();
+  }catch(e){ hideLoader(); toast(`同期失敗: ${e.message}`,'err') }
+}
+
+async function testGH(){
+  await saveSettings();
+  const g = gh();
+  if(!g.token||!g.owner||!g.repo){ toast('設定を入力してください','err'); return }
+  showLoader('接続確認中…');
+  const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}`,{headers:ghH()});
+  hideLoader();
+  if(r.ok) toast('接続成功','ok');
+  else if(r.status===401) toast('Token認証エラー','err');
+  else if(r.status===404) toast('リポジトリが見つかりません','err');
+  else toast(`エラー ${r.status}`,'err');
+}
+
+// ============================================================
+// TESSERACT OCR
+// ============================================================
+async function ensureTesseractWorker(){
+  if(S.tesseractWorker) return S.tesseractWorker;
+  showOCRProgress(0,'Tesseract.js 初期化中…');
+  S.tesseractWorker = await Tesseract.createWorker(['jpn','chi_sim','eng'], 1, {
+    logger: m => {
+      if(m.status === 'recognizing text'){
+        showOCRProgress(Math.round(m.progress * 100), `認識中… ${Math.round(m.progress*100)}%`);
+      } else if(m.status === 'loading language traineddata'){
+        showOCRProgress(10, `言語データ読込中…`);
+      } else if(m.status === 'initializing api'){
+        showOCRProgress(5, '初期化中…');
+      }
+    }
+  });
+  return S.tesseractWorker;
+}
+
+async function runOCRTesseract(imageBase64){
+  const worker = await ensureTesseractWorker();
+  showOCRProgress(50, '解析中…');
+  const { data: { text } } = await worker.recognize(imageBase64);
+  return text.trim();
+}
+
+async function runOCRClaude(imageBase64, mimeType){
+  const key = claudeKey();
+  if(!key) throw new Error('Claude APIキーが未設定です');
+  const pureB64 = imageBase64.replace(/^data:image\/\w+;base64,/,'');
+  const body = {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    messages: [{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:mimeType||'image/jpeg',data:pureB64}},
+      {type:'text',text:'この画像に含まれるテキストをすべて抽出してください。テキストがない場合は「（テキストなし）」と返してください。抽出テキストのみを返し、説明は不要です。'}
+    ]}]
+  };
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json(); throw new Error(e.error?.message||`API error ${r.status}`) }
+  const d = await r.json();
+  return d.content[0].text.trim();
+}
+
+// ============================================================
+// PHOTO FLOW: capture → OCR → then enable save
+// ============================================================
+function compressImage(file, maxDim=1200, quality=0.78){
+  return new Promise(res=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w=img.width, h=img.height;
+        if(w>maxDim||h>maxDim){ if(w>h){h=Math.round(h*maxDim/w);w=maxDim}else{w=Math.round(w*maxDim/h);h=maxDim} }
+        const cv = document.createElement('canvas');
+        cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        res(cv.toDataURL('image/jpeg',quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onPhotoSelected(input){
+  const file = input.files[0];
+  if(!file) return;
+  showLoader('画像を処理中…');
+  S.photoData = await compressImage(file);
+  S.photoMime = 'image/jpeg';
+  S.ocrText = '';
+  S.ocrDone = false;
+  document.getElementById('photo-preview').src = S.photoData;
+  document.getElementById('photo-preview-wrap').classList.add('visible');
+  document.getElementById('ocr-result').classList.remove('visible');
+  document.getElementById('reanalyze-btn').style.display = 'none';
+  document.getElementById('photo-save-btn').disabled = true;
+  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
+  input.value = '';
+  hideLoader();
+  // Auto-start OCR
+  await runOCR();
+}
+
+async function runOCR(){
+  if(!S.photoData){ toast('写真を選択してください','err'); return }
+  S.ocrDone = false;
+  document.getElementById('photo-save-btn').disabled = true;
+  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
+  document.getElementById('ocr-progress-wrap').classList.add('visible');
+  document.getElementById('ocr-result').classList.remove('visible');
+  // Show engine badge
+  const engine = ocrEngine();
+  const badgeClass = engine === 'claude' ? 'claude' : 'tesseract';
+  const badgeText = engine === 'claude' ? 'Claude API' : 'Tesseract.js';
+  document.getElementById('ocr-engine-badge').className = `ocr-engine-badge ${badgeClass}`;
+  document.getElementById('ocr-engine-badge').textContent = badgeText;
+  document.getElementById('ocr-result-badge').className = `ocr-engine-badge ${badgeClass}`;
+  document.getElementById('ocr-result-badge').textContent = badgeText;
+
+  try{
+    let text = '';
+    if(engine === 'claude'){
+      showOCRProgress(10,'Claude APIに送信中…');
+      text = await runOCRClaude(S.photoData, S.photoMime);
+    } else {
+      text = await runOCRTesseract(S.photoData);
+    }
+    S.ocrText = text || '（テキストなし）';
+    document.getElementById('ocr-text').textContent = S.ocrText;
+    document.getElementById('ocr-progress-wrap').classList.remove('visible');
+    document.getElementById('ocr-result').classList.add('visible');
+    document.getElementById('reanalyze-btn').style.display = '';
+    S.ocrDone = true;
+    document.getElementById('photo-save-btn').disabled = false;
+    document.getElementById('photo-save-btn').textContent = '写真を保存（JSONのみGitHub）';
+    toast('OCR完了','ok');
+  }catch(e){
+    document.getElementById('ocr-progress-wrap').classList.remove('visible');
+    document.getElementById('reanalyze-btn').style.display = '';
+    S.ocrDone = true; // allow save even if OCR failed
+    document.getElementById('photo-save-btn').disabled = false;
+    document.getElementById('photo-save-btn').textContent = '写真を保存（OCR失敗）';
+    toast(`OCR失敗: ${e.message}`,'err');
+  }
+}
+
+function showOCRProgress(pct, label){
+  document.getElementById('ocr-progress-bar').style.width = pct + '%';
+  document.getElementById('ocr-progress-label').textContent = label;
+}
+
+function clearPhoto(){
+  S.photoData = null; S.ocrText = ''; S.ocrDone = false;
+  document.getElementById('photo-preview-wrap').classList.remove('visible');
+  document.getElementById('ocr-progress-wrap').classList.remove('visible');
+  document.getElementById('ocr-result').classList.remove('visible');
+  document.getElementById('photo-preview').src = '';
+  document.getElementById('photo-save-btn').disabled = true;
+  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
+  document.getElementById('reanalyze-btn').style.display = 'none';
+}
+
+// ============================================================
+// VOICE
+// ============================================================
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+async function toggleRecording(){
+  if(S.isRecording) stopRecording();
+  else await startRecording();
+}
+async function startRecording(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    S.mediaRecorder = new MediaRecorder(stream);
+    S.mediaRecorder.start();
+  }catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
+  S.isRecording = true;
+  S.transcriptFinal = ''; S.transcriptInterim = '';
+  S.recSeconds = 0;
+  updateTranscriptUI();
+  S.recTimerInterval = setInterval(()=>{
+    S.recSeconds++;
+    const m=Math.floor(S.recSeconds/60), s=S.recSeconds%60;
+    document.getElementById('rec-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  },1000);
+  if(SR){
+    S.recognition = new SR();
+    S.recognition.lang = 'ja-JP';
+    S.recognition.continuous = true;
+    S.recognition.interimResults = true;
+    S.recognition.onresult = e => {
+      let interim = '';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) S.transcriptFinal += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      S.transcriptInterim = interim;
+      updateTranscriptUI();
+    };
+    S.recognition.onerror = e => { if(e.error!=='aborted') toast(`音声認識エラー: ${e.error}`,'err') };
+    try{ S.recognition.start() }catch(_){}
+  }
+  updateRecordUI();
+}
+function stopRecording(){
+  S.isRecording = false;
+  clearInterval(S.recTimerInterval);
+  document.getElementById('rec-timer').textContent = '';
+  if(S.recognition){ try{ S.recognition.stop() }catch(_){} }
+  if(S.mediaRecorder && S.mediaRecorder.state!=='inactive'){
+    S.mediaRecorder.stop();
+    S.mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  }
+  S.transcriptInterim = '';
+  updateTranscriptUI();
+  updateRecordUI();
+}
+function updateRecordUI(){
+  const btn = document.getElementById('record-btn');
+  const status = document.getElementById('record-status');
+  const micI = document.getElementById('rec-icon-mic');
+  const stopI = document.getElementById('rec-icon-stop');
+  if(S.isRecording){
+    btn.classList.add('recording'); status.textContent='録音中… タップで停止';
+    status.className='record-status active'; micI.style.display='none'; stopI.style.display='';
+  }else{
+    btn.classList.remove('recording'); status.textContent='タップして録音開始';
+    status.className='record-status'; micI.style.display=''; stopI.style.display='none';
+  }
+}
+function updateTranscriptUI(){
+  const box = document.getElementById('transcript-box');
+  const ph = document.getElementById('transcript-ph');
+  if(S.transcriptFinal || S.transcriptInterim){
+    if(ph) ph.style.display = 'none';
+    box.innerHTML = esc(S.transcriptFinal);
+    if(S.transcriptInterim){
+      const span = document.createElement('span');
+      span.style.color = 'var(--muted)';
+      span.textContent = S.transcriptInterim;
+      box.appendChild(span);
+    }
+  }else{
+    box.innerHTML = '<span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>';
+  }
+}
+function clearTranscript(){
+  S.transcriptFinal = ''; S.transcriptInterim = '';
+  updateTranscriptUI();
+}
+
+// ============================================================
+// SAVE
+// ============================================================
+function genId(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}_${Math.random().toString(36).slice(2,6)}`;
+}
+
+async function saveMemo(){
+  const text = document.getElementById('memo-text').value.trim();
+  const voice = S.transcriptFinal.trim();
+  if(!text && !voice){ toast('テキストまたは録音が必要です','err'); return }
+  const btn = document.getElementById('memo-save-btn');
+  btn.disabled = true;
+  const item = {
+    id: genId(), type:'memo', timestamp: new Date().toISOString(),
+    text, voiceTranscript: voice,
+    tags: [...S.memoTags], profile: S.activeProfile, ghSynced: false
+  };
+  await dbPut(item);
+  let ghR = {ok:false,reason:'unconfigured'};
+  const g = gh();
+  if(g.token && g.owner && g.repo){
+    try{ ghR = await ghWriteJSON(item) }catch(e){ ghR = {ok:false,reason:e.message} }
+    if(ghR.ok){ item.ghSynced=true; await dbPut(item) }
+  }
+  document.getElementById('memo-text').value = '';
+  clearTranscript();
+  S.memoTags.clear();
+  renderTagChips('memo');
+  btn.disabled = false;
+  if(ghR.reason==='unconfigured') toast('ローカルに保存しました');
+  else if(ghR.ok) toast('保存 + GitHub同期完了','ok');
+  else toast(`保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+}
+
+async function savePhoto(){
+  if(!S.photoData){ toast('写真を選択してください','err'); return }
+  const btn = document.getElementById('photo-save-btn');
+  btn.disabled = true;
+  const note = document.getElementById('photo-note').value.trim();
+  const item = {
+    id: genId(), type:'photo', timestamp: new Date().toISOString(),
+    imageData: S.photoData,   // stored in IndexedDB only
+    ocrText: S.ocrText,
+    ocrEngine: ocrEngine(),
+    note, tags: [...S.photoTags],
+    profile: S.activeProfile, ghSynced: false
+  };
+  // Save full item (with imageData) to IndexedDB
+  await dbPut(item);
+  // Push JSON only (imageData stripped in ghWriteJSON) to GitHub
+  let ghR = {ok:false,reason:'unconfigured'};
+  const g = gh();
+  if(g.token && g.owner && g.repo){
+    try{ ghR = await ghWriteJSON(item) }catch(e){ ghR = {ok:false,reason:e.message} }
+    if(ghR.ok){ item.ghSynced=true; await dbPut(item) }
+  }
+  clearPhoto();
+  document.getElementById('photo-note').value = '';
+  S.photoTags.clear();
+  renderTagChips('photo');
+  btn.disabled = false;
+  btn.textContent = 'OCR完了後に保存できます';
+  if(ghR.reason==='unconfigured') toast('端末に保存しました（画像＋テキスト）');
+  else if(ghR.ok) toast('保存完了。GitHubにはテキストのみ送信','ok');
+  else toast(`端末保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+async function loadHistory(){
+  const all = await dbAll();
+  S.allMemos = all;
+  renderHistory(all);
+}
+
+function renderHistory(items){
+  const filtered = S.filterTag ? items.filter(m=>(m.tags||[]).includes(S.filterTag)) : items;
+  document.getElementById('tl-count').textContent = `${filtered.length} 件`;
+  const allTags = [...new Set(items.flatMap(m=>m.tags||[]))];
+  const fb = document.getElementById('filter-bar');
+  fb.innerHTML = '';
+  [{label:'すべて',value:null},...allTags.map(t=>({label:t,value:t}))].forEach(({label,value})=>{
+    const b = document.createElement('button');
+    b.className = 'filter-chip' + (S.filterTag===value?' on':'');
+    b.textContent = label;
+    b.onclick = () => { S.filterTag=value; renderHistory(items) };
+    fb.appendChild(b);
+  });
+  const list = document.getElementById('timeline-list');
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">[ ]</div>記録がありません</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'memo-card';
+    const isExp = S.expandedId === item.id;
+    const ts = fmtTs(item.timestamp);
+    const typeLabel = item.type==='photo' ? '写真' : 'メモ';
+    const typeClass = item.type==='photo' ? 'photo' : 'memo';
+    const syncLabel = item.ghSynced ? '<span class="card-sync ok">✓ GH</span>' : '<span class="card-sync">● local</span>';
+    const tagsHtml = (item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
+    let bodyHtml = '';
+    if(item.type === 'memo'){
+      const txt = (item.text||'') + (item.voiceTranscript ? `\n[音声] ${item.voiceTranscript}` : '');
+      bodyHtml = `<div class="card-body${isExp?'':' clamp'}">${esc(txt)}</div>`;
+    } else {
+      const ocrPreview = item.ocrText || '';
+      bodyHtml = ocrPreview ? `<div class="card-body${isExp?'':' clamp'}">${esc(ocrPreview)}</div>` : '';
+      if(isExp && item.imageData){
+        bodyHtml += `<img class="card-img-thumb" src="${item.imageData}" alt="">`;
+        bodyHtml += `<div class="card-img-note">※ 元画像はこの端末のみ保持。GitHubにはテキストのみ保存済。</div>`;
+      }
+    }
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="card-ts">${ts}</span>
+        <span class="card-type ${typeClass}">${typeLabel}</span>
+        ${syncLabel}
+      </div>
+      ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+      ${bodyHtml}
+    `;
+    card.onclick = () => { S.expandedId = isExp ? null : item.id; renderHistory(S.allMemos) };
+    list.appendChild(card);
+  });
+}
+
+// ============================================================
+// TAGS
+// ============================================================
+function renderTagChips(panel){
+  const wrap = document.getElementById(`${panel}-tags`);
+  if(!wrap) return;
+  const selected = panel === 'memo' ? S.memoTags : S.photoTags;
+  wrap.innerHTML = '';
+  S.presetTags.forEach(tag=>{
+    const btn = document.createElement('button');
+    btn.className = 'tag-chip' + (selected.has(tag) ? ' on' : '');
+    btn.textContent = tag;
+    btn.onclick = () => { selected.has(tag) ? selected.delete(tag) : selected.add(tag); renderTagChips(panel) };
+    wrap.appendChild(btn);
+  });
+  selected.forEach(tag=>{
+    if(!S.presetTags.includes(tag)){
+      const btn = document.createElement('button');
+      btn.className = 'tag-chip on';
+      btn.textContent = tag;
+      btn.onclick = () => { selected.delete(tag); renderTagChips(panel) };
+      wrap.appendChild(btn);
+    }
+  });
+}
+function addTag(panel){
+  const inp = document.getElementById(`${panel}-tag-input`);
+  const val = inp.value.trim();
+  if(!val) return;
+  (panel==='memo' ? S.memoTags : S.photoTags).add(val);
+  inp.value = '';
+  renderTagChips(panel);
+}
+
+// ============================================================
+// SETTINGS & PROFILES
+// ============================================================
+function switchProfile(name){
+  S.activeProfile = name;
+  document.getElementById('tab-private').className = `profile-tab${name==='private'?' active private':''}`;
+  document.getElementById('tab-work').className = `profile-tab work${name==='work'?' active':''}`;
+  document.getElementById('settings-private').style.display = name==='private' ? '' : 'none';
+  document.getElementById('settings-work').style.display = name==='work' ? '' : 'none';
+  const badge = document.getElementById('profile-badge');
+  if(name === 'private'){
+    badge.className = 'profile-badge private';
+    badge.textContent = 'PRIVATE';
+    document.getElementById('profile-description').innerHTML = 'OCRエンジン：Tesseract.js（ブラウザ内・無料）<br>保存先：GitHub';
+  }else{
+    badge.className = 'profile-badge work';
+    badge.textContent = 'WORK';
+    document.getElementById('profile-description').innerHTML = `OCRエンジン：${claudeKey() ? 'Claude API（設定済）' : 'Tesseract.js（APIキー未設定）'}<br>保存先：GitHub（OneDriveは後から対応）`;
+  }
+  updateGhStatus();
+  kvSet('activeProfile', name);
+}
+
+async function saveSettings(){
+  S.profiles.private.gh.token  = document.getElementById('s-token').value.trim();
+  S.profiles.private.gh.owner  = document.getElementById('s-owner').value.trim();
+  S.profiles.private.gh.repo   = document.getElementById('s-repo').value.trim();
+  S.profiles.private.gh.branch = document.getElementById('s-branch').value.trim() || 'main';
+  S.profiles.work.claudeKey    = document.getElementById('s-claude-work').value.trim();
+  S.profiles.work.gh.token  = document.getElementById('s-token-work').value.trim();
+  S.profiles.work.gh.owner  = document.getElementById('s-owner-work').value.trim();
+  S.profiles.work.gh.repo   = document.getElementById('s-repo-work').value.trim();
+  S.profiles.work.gh.branch = document.getElementById('s-branch-work').value.trim() || 'main';
+  await kvSet('profiles', S.profiles);
+  updateGhStatus();
+  toast('設定を保存しました','ok');
+}
+
+async function saveTags(){
+  S.presetTags = document.getElementById('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  await kvSet('presetTags', S.presetTags);
+  renderTagChips('memo'); renderTagChips('photo');
+  toast('タグを更新しました','ok');
+}
+
+async function exportAll(){
+  const all = await dbAll();
+  if(!all.length){ toast('記録がありません','err'); return }
+  const lines = all.map(item=>{
+    const ts = fmtTs(item.timestamp);
+    const tags = (item.tags||[]).length ? `[${item.tags.join(', ')}] ` : '';
+    if(item.type === 'photo'){
+      return `## 📷 ${ts} ${tags}\n\n${item.ocrText ? `**OCR:** ${item.ocrText}` : ''}\n${item.note ? `**メモ:** ${item.note}` : ''}`;
+    }
+    const body = [item.text, item.voiceTranscript && `[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n');
+    return `## 📝 ${ts} ${tags}\n\n${body}`;
+  });
+  const md = `# FIELDMEMO Export\n生成日時: ${new Date().toLocaleString('ja-JP')}\n総件数: ${all.length}件\n\n---\n\n${lines.join('\n\n---\n\n')}`;
+  const blob = new Blob([md],{type:'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fieldmemo_${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+}
+
+async function clearLocal(){
+  if(!confirm('ローカルの全記録を削除しますか？\nGitHubのデータは削除されません。')) return;
+  await dbClear();
+  if(S.panel === 'history') loadHistory();
+  toast('削除しました');
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  document.getElementById(`tab-btn-${name}`).classList.add('active');
+  S.panel = name;
+  if(name === 'history') loadHistory();
+  if(name === 'settings') fillSettingsForm();
+}
+
+function fillSettingsForm(){
+  document.getElementById('s-token').value = S.profiles.private.gh.token || '';
+  document.getElementById('s-owner').value = S.profiles.private.gh.owner || '';
+  document.getElementById('s-repo').value  = S.profiles.private.gh.repo  || '';
+  document.getElementById('s-branch').value= S.profiles.private.gh.branch|| 'main';
+  document.getElementById('s-claude-work').value  = S.profiles.work.claudeKey || '';
+  document.getElementById('s-token-work').value   = S.profiles.work.gh.token  || '';
+  document.getElementById('s-owner-work').value   = S.profiles.work.gh.owner  || '';
+  document.getElementById('s-repo-work').value    = S.profiles.work.gh.repo   || '';
+  document.getElementById('s-branch-work').value  = S.profiles.work.gh.branch || 'main';
+  document.getElementById('s-tags').value = S.presetTags.join(',');
+}
+
+function updateGhStatus(){
+  const g = gh();
+  const dot = document.getElementById('gh-dot');
+  const lbl = document.getElementById('gh-label');
+  if(g.token && g.owner && g.repo){ dot.className='dot ok'; lbl.textContent=`${g.owner}/${g.repo}` }
+  else{ dot.className='dot'; lbl.textContent='GH未設定' }
+}
+
+function updateClock(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const date = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+  document.getElementById('ts-time').textContent = time;
+  document.getElementById('ts-date').textContent = date;
+  document.getElementById('ts-time2').textContent = time;
+  document.getElementById('ts-date2').textContent = date;
+}
+
+function fmtTs(iso){
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') }
+
+let toastT;
+function toast(msg, type='', dur=2800){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show${type?' '+type:''}`;
+  clearTimeout(toastT); toastT = setTimeout(()=>el.className='', dur);
+}
+function showLoader(msg='処理中…'){ document.getElementById('loader-msg').textContent=msg; document.getElementById('loader').classList.add('show') }
+function hideLoader(){ document.getElementById('loader').classList.remove('show') }
+
+// ============================================================
+// INIT
+// ============================================================
+async function init(){
+  await initDB();
+  const saved = await kvGet('profiles');
+  if(saved) Object.assign(S.profiles, saved);
+  const ts = await kvGet('presetTags');
+  if(ts) S.presetTags = ts;
+  const ap = await kvGet('activeProfile');
+  if(ap) S.activeProfile = ap;
+  updateClock(); setInterval(updateClock, 15000);
+  updateGhStatus();
+  renderTagChips('memo'); renderTagChips('photo');
+  // Apply saved profile badge
+  switchProfile(S.activeProfile);
+}
+init();
+
+['memo','photo'].forEach(p=>{
+  document.getElementById(`${p}-tag-input`).addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();addTag(p)} });
+});
+</script>
+</body>
+</html>
