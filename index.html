@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
@@ -34,11 +34,11 @@ header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-c
 .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.warn{background:var(--accent)}
 
-.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,0px)}
 .panel.active{display:block}
 
-.tabbar{height:var(--nav);flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1)}
-.tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:0}
+.tabbar{flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:8px 0}
 .tabbar button.active{color:var(--accent)}
 .tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
@@ -147,7 +147,7 @@ textarea{line-height:1.65}
 .settings-actions{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
 
 /* Toast / Loader */
-#toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:var(--mono);padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:200;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:var(--mono);padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:200;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.ok{border-color:var(--ok);color:var(--ok)}
 #toast.err{border-color:var(--danger);color:var(--danger)}
@@ -648,14 +648,14 @@ async function runOCR(){
     document.getElementById('reanalyze-btn').style.display='';
     S.ocrDone=true;
     document.getElementById('photo-save-btn').disabled=false;
-    document.getElementById('photo-save-btn').textContent='OCRテキストを保存（GitHubにはテキストのみ）';
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存する';
     toast('OCR完了','ok');
   }catch(e){
     document.getElementById('ocr-progress-wrap').classList.remove('visible');
     document.getElementById('reanalyze-btn').style.display='';
     S.ocrDone=true;
     document.getElementById('photo-save-btn').disabled=false;
-    document.getElementById('photo-save-btn').textContent='OCRテキストを保存（OCR失敗）';
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存する（OCR失敗）';
     toast(`OCR失敗: ${e.message}`,'err');
   }
 }
