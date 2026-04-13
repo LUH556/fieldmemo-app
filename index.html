@@ -648,14 +648,14 @@ async function runOCR(){
     document.getElementById('reanalyze-btn').style.display='';
     S.ocrDone=true;
     document.getElementById('photo-save-btn').disabled=false;
-    document.getElementById('photo-save-btn').textContent='写真を保存（GitHubにはテキストのみ）';
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存（GitHubにはテキストのみ）';
     toast('OCR完了','ok');
   }catch(e){
     document.getElementById('ocr-progress-wrap').classList.remove('visible');
     document.getElementById('reanalyze-btn').style.display='';
     S.ocrDone=true;
     document.getElementById('photo-save-btn').disabled=false;
-    document.getElementById('photo-save-btn').textContent='写真を保存（OCR失敗）';
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存（OCR失敗）';
     toast(`OCR失敗: ${e.message}`,'err');
   }
 }
