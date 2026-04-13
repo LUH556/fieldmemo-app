@@ -9,7 +9,7 @@
 <title>FIELDMEMO</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/500.css">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -24,7 +24,6 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
 #app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto}
 
-/* Header */
 header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--s1)}
 .logo{font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--accent);font-weight:500}
 .hdr-right{display:flex;align-items:center;gap:10px}
@@ -33,47 +32,41 @@ header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-c
 .profile-badge.work{border-color:rgba(167,139,250,.4);color:var(--purple)}
 .hdr-status{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
-.dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.warn{background:var(--accent)}
 
-/* Panels */
 .panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
 .panel.active{display:block}
 
-/* Tab bar */
 .tabbar{height:var(--nav);flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1)}
 .tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:0}
 .tabbar button.active{color:var(--accent)}
 .tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-/* Fields */
 .field{padding:12px 16px;border-bottom:1px solid var(--border)}
 .field-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
 textarea,input[type=text],input[type=password]{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;padding:10px 12px;border-radius:6px;-webkit-appearance:none;outline:none;transition:border-color .15s;resize:none}
 textarea:focus,input:focus{border-color:var(--accent)}
 textarea{line-height:1.65}
 
-/* Timestamp */
 .ts-block{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:baseline;gap:12px}
 .ts-time{font-family:var(--mono);font-size:24px;color:var(--text);letter-spacing:.03em}
 .ts-date{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-/* Tags */
 .tags-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
 .tag-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
 .tag-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
 .tag-input-row{display:flex;gap:8px;margin-top:4px}
 .tag-input-row input{flex:1;font-size:13px}
 
-/* Buttons */
 .btn-primary{display:block;width:calc(100% - 32px);margin:14px 16px;padding:14px;border:none;border-radius:8px;background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s}
 .btn-primary:active{transform:scale(.98);background:var(--accent2)}
-.btn-primary:disabled{background:var(--faint);color:var(--muted);cursor:not-allowed}
+.btn-primary:disabled{background:var(--faint);color:var(--muted);cursor:not-allowed;transform:none}
 .btn-sm{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap}
 .btn-sm:active{border-color:var(--accent);color:var(--accent)}
 .btn-sm:disabled{opacity:.4;cursor:not-allowed}
 .btn-sm svg{width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .btn-sm.danger{border-color:rgba(239,68,68,.4);color:var(--danger)}
-.btn-sm.ok-color{border-color:rgba(34,197,94,.4);color:var(--ok)}
+.btn-sm.success{border-color:rgba(34,197,94,.4);color:var(--ok)}
 
 /* Voice */
 .record-section{padding:12px 16px;border-bottom:1px solid var(--border)}
@@ -87,7 +80,7 @@ textarea{line-height:1.65}
 .record-status.active{color:var(--danger)}
 .transcript-box{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-height:60px;font-size:14px;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-all}
 
-/* Photo panel */
+/* Photo */
 .capture-row{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
 .capture-row label{flex:1}
 .capture-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;padding:18px 10px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--mono);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s}
@@ -98,31 +91,22 @@ textarea{line-height:1.65}
 .photo-preview-wrap.visible{display:block}
 .photo-preview{width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:var(--s2);display:block}
 .photo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
-.photo-storage-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
 
-/* OCR progress */
+/* OCR */
 .ocr-progress-wrap{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
 .ocr-progress-wrap.visible{display:block}
-.ocr-progress-bar-bg{background:var(--s2);border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px}
-.ocr-progress-bar{background:var(--accent);height:4px;border-radius:4px;width:0%;transition:width .3s}
-.ocr-progress-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.ocr-engine-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:10px;margin-left:8px}
-.ocr-engine-badge.tesseract{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--ok)}
-.ocr-engine-badge.claude{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--accent)}
-
-/* OCR result */
+.ocr-bar-bg{background:var(--s2);border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px}
+.ocr-bar{background:var(--accent);height:4px;border-radius:4px;width:0%;transition:width .4s}
+.ocr-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .ocr-result{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
 .ocr-result.visible{display:block}
-.ocr-section{margin-bottom:10px}
 .ocr-section-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
-.ocr-text{font-size:13px;line-height:1.65;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;word-break:break-all;white-space:pre-wrap;max-height:120px;overflow-y:auto}
+.ocr-text{font-size:13px;line-height:1.65;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;word-break:break-all;white-space:pre-wrap;max-height:130px;overflow-y:auto}
 
-/* Storage indicator */
-.storage-info{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px}
-.storage-item{flex:1;background:var(--s2);border-radius:6px;padding:8px 10px;border:1px solid var(--border)}
-.storage-item-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.storage-item-val{font-family:var(--mono);font-size:12px;color:var(--text)}
-.storage-item-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+/* API key warning banner */
+.api-warn{margin:12px 16px;padding:10px 12px;border-radius:6px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.07);font-size:12px;color:var(--accent);line-height:1.6;display:none}
+.api-warn.visible{display:block}
+.api-warn a{color:var(--accent);text-decoration:underline;cursor:pointer}
 
 /* Timeline */
 .tl-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
@@ -144,8 +128,9 @@ textarea{line-height:1.65}
 .card-tag{padding:2px 7px;border-radius:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);color:var(--accent);font-size:11px}
 .card-body{font-size:14px;line-height:1.6;color:var(--text);word-break:break-all}
 .card-body.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-img-thumb{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px;background:var(--s2)}
-.card-img-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
+.card-thumb{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px}
+.card-dl-row{display:flex;gap:8px;margin-top:8px}
+.card-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
 .empty-state{padding:56px 24px;text-align:center;color:var(--muted);font-size:14px;line-height:2}
 .empty-icon{font-family:var(--mono);font-size:26px;color:var(--faint);margin-bottom:10px}
 
@@ -155,32 +140,28 @@ textarea{line-height:1.65}
 .sr{margin-bottom:12px}
 .sr-label{font-size:13px;color:var(--muted);margin-bottom:5px}
 .sr-note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;opacity:.65}
-.profile-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px}
-.profile-tab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.profile-tab.active.private{background:rgba(96,165,250,.15);color:var(--info)}
-.profile-tab.active.work{background:rgba(167,139,250,.15);color:var(--purple)}
+.profile-tabs{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.ptab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.ptab.active.private{background:rgba(96,165,250,.15);color:var(--info)}
+.ptab.active.work{background:rgba(167,139,250,.15);color:var(--purple)}
 .settings-actions{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
 
-/* Toast */
+/* Toast / Loader */
 #toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:var(--mono);padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:200;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.ok{border-color:var(--ok);color:var(--ok)}
 #toast.err{border-color:var(--danger);color:var(--danger)}
 #toast.info{border-color:var(--info);color:var(--info)}
-
-/* Loader */
 #loader{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:300;flex-direction:column;gap:12px}
 #loader.show{display:flex}
 .loader-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-.loader-msg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;max-width:240px;line-height:1.5}
+.loader-msg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;max-width:260px;line-height:1.5}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border)}
 </style>
 </head>
 <body>
 <div id="app">
-
   <header>
     <span class="logo">FIELDMEMO</span>
     <div class="hdr-right">
@@ -191,7 +172,7 @@ textarea{line-height:1.65}
     </div>
   </header>
 
-  <!-- ══ MEMO panel ══ -->
+  <!-- ══ MEMO ══ -->
   <div id="panel-memo" class="panel active">
     <div class="ts-block">
       <span class="ts-time" id="ts-time">--:--</span>
@@ -205,16 +186,15 @@ textarea{line-height:1.65}
       <div class="field-label">ボイスメモ</div>
       <div class="record-btn-wrap">
         <button class="record-btn" id="record-btn" onclick="toggleRecording()">
-          <svg id="rec-icon-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          <svg id="rec-icon-stop" viewBox="0 0 24 24" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          <svg id="rec-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <svg id="rec-stop" viewBox="0 0 24 24" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
         </button>
         <div>
-          <div class="record-status" id="record-status">タップして録音開始</div>
+          <div class="record-status" id="rec-status">タップして録音開始</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px" id="rec-timer"></div>
         </div>
         <button class="btn-sm" onclick="clearTranscript()" style="margin-left:auto">
-          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-          クリア
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>クリア
         </button>
       </div>
       <div class="transcript-box" id="transcript-box">
@@ -234,26 +214,16 @@ textarea{line-height:1.65}
     <button class="btn-primary" id="memo-save-btn" onclick="saveMemo()">メモを保存</button>
   </div>
 
-  <!-- ══ PHOTO panel ══ -->
+  <!-- ══ PHOTO ══ -->
   <div id="panel-photo" class="panel">
     <div class="ts-block">
       <span class="ts-time" id="ts-time2">--:--</span>
       <span class="ts-date" id="ts-date2"></span>
     </div>
 
-    <!-- Storage flow indicator -->
-    <div class="storage-info">
-      <div class="storage-item">
-        <div class="storage-item-label">端末（IndexedDB）</div>
-        <div class="storage-item-val">JSON + 元画像</div>
-        <div class="storage-item-sub">ローカルで画像閲覧可</div>
-      </div>
-      <div style="display:flex;align-items:center;color:var(--muted);font-size:18px;padding:0 4px">→</div>
-      <div class="storage-item">
-        <div class="storage-item-label">GitHub（クラウド）</div>
-        <div class="storage-item-val">JSONのみ</div>
-        <div class="storage-item-sub">OCRテキスト・タグのみ</div>
-      </div>
+    <div class="api-warn" id="api-warn">
+      Claude APIキーが未設定です。設定タブで入力してください。<br>
+      <span onclick="showPanel('settings')" style="cursor:pointer;text-decoration:underline">→ 設定を開く</span>
     </div>
 
     <div class="capture-row">
@@ -276,6 +246,10 @@ textarea{line-height:1.65}
     <div class="photo-preview-wrap" id="photo-preview-wrap">
       <img id="photo-preview" class="photo-preview" src="" alt="">
       <div class="photo-actions">
+        <button class="btn-sm success" id="dl-current-btn" onclick="downloadCurrentPhoto()" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          この写真を保存
+        </button>
         <button class="btn-sm" id="reanalyze-btn" onclick="runOCR()" style="display:none">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           再解析
@@ -287,24 +261,15 @@ textarea{line-height:1.65}
       </div>
     </div>
 
-    <!-- OCR progress -->
     <div class="ocr-progress-wrap" id="ocr-progress-wrap">
-      <div style="display:flex;align-items:center;margin-bottom:8px">
-        <span class="field-label" style="margin:0">OCR解析中</span>
-        <span class="ocr-engine-badge" id="ocr-engine-badge">Tesseract.js</span>
-      </div>
-      <div class="ocr-progress-bar-bg"><div class="ocr-progress-bar" id="ocr-progress-bar"></div></div>
-      <div class="ocr-progress-label" id="ocr-progress-label">初期化中…</div>
+      <div class="field-label" style="margin-bottom:8px">OCR解析中（Claude API）</div>
+      <div class="ocr-bar-bg"><div class="ocr-bar" id="ocr-bar"></div></div>
+      <div class="ocr-label" id="ocr-label">送信中…</div>
     </div>
 
-    <!-- OCR result -->
     <div class="ocr-result" id="ocr-result">
-      <div class="ocr-section">
-        <div class="ocr-section-label">抽出テキスト
-          <span class="ocr-engine-badge" id="ocr-result-badge">Tesseract.js</span>
-        </div>
-        <div class="ocr-text" id="ocr-text"></div>
-      </div>
+      <div class="ocr-section-label">抽出テキスト</div>
+      <div class="ocr-text" id="ocr-text"></div>
     </div>
 
     <div class="field">
@@ -324,7 +289,7 @@ textarea{line-height:1.65}
     <button class="btn-primary" id="photo-save-btn" onclick="savePhoto()" disabled>OCR完了後に保存できます</button>
   </div>
 
-  <!-- ══ HISTORY panel ══ -->
+  <!-- ══ HISTORY ══ -->
   <div id="panel-history" class="panel">
     <div class="tl-toolbar">
       <span class="tl-count" id="tl-count">0 件</span>
@@ -337,22 +302,28 @@ textarea{line-height:1.65}
     <div id="timeline-list"></div>
   </div>
 
-  <!-- ══ SETTINGS panel ══ -->
+  <!-- ══ SETTINGS ══ -->
   <div id="panel-settings" class="panel">
     <div class="sg">
       <div class="sg-title">環境プロファイル</div>
       <div class="profile-tabs">
-        <button class="profile-tab active private" id="tab-private" onclick="switchProfile('private')">プライベート</button>
-        <button class="profile-tab work" id="tab-work" onclick="switchProfile('work')">業務</button>
+        <button class="ptab active private" id="ptab-private" onclick="switchProfile('private')">プライベート</button>
+        <button class="ptab work" id="ptab-work" onclick="switchProfile('work')">業務</button>
       </div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6" id="profile-description">
-        OCRエンジン：Tesseract.js（ブラウザ内・無料）<br>
-        保存先：GitHub
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7" id="profile-desc">
+        OCR：Claude API（Haiku 4.5）<br>保存先：GitHub
       </div>
     </div>
 
-    <!-- Private settings -->
-    <div id="settings-private">
+    <div id="pane-private">
+      <div class="sg">
+        <div class="sg-title">Claude API（プライベート）</div>
+        <div class="sr">
+          <div class="sr-label">APIキー</div>
+          <input type="password" id="s-claude-private" placeholder="sk-ant-api03-...">
+          <div class="sr-note">console.anthropic.com でAPIアカウントを作成して発行。<br>OCRに使用（0.43円/枚目安）。使わなければ課金なし。</div>
+        </div>
+      </div>
       <div class="sg">
         <div class="sg-title">GitHub（プライベート）</div>
         <div class="sr">
@@ -375,25 +346,19 @@ textarea{line-height:1.65}
       </div>
     </div>
 
-    <!-- Work settings -->
-    <div id="settings-work" style="display:none">
+    <div id="pane-work" style="display:none">
       <div class="sg">
         <div class="sg-title">Claude API（業務）</div>
         <div class="sr">
           <div class="sr-label">法人APIキー</div>
           <input type="password" id="s-claude-work" placeholder="sk-ant-api03-...">
-          <div class="sr-note">OCR・要約に使用します。Enterpriseプランの管理者から取得してください。</div>
+          <div class="sr-note">Enterpriseプランの管理者から取得。OCR・解析に使用。</div>
         </div>
       </div>
       <div class="sg">
-        <div class="sg-title">OneDrive（業務）</div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;padding-bottom:8px">
-          OneDrive対応は後から実装予定です。<br>
-          現在は業務モードでもGitHubに保存されます。<br>
-          （業務用GitHubリポジトリを設定してください）
-        </div>
+        <div class="sg-title">GitHub（業務） ※OneDrive対応まで暫定</div>
         <div class="sr">
-          <div class="sr-label">Personal Access Token（業務用）</div>
+          <div class="sr-label">Personal Access Token</div>
           <input type="password" id="s-token-work" placeholder="ghp_xxxxxxxxxxxx">
         </div>
         <div class="sr">
@@ -435,16 +400,27 @@ textarea{line-height:1.65}
     </div>
 
     <div class="sg">
-      <div class="sg-title">データ操作</div>
+      <div class="sg-title">データ出力</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-sm" onclick="exportAll()">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button class="btn-sm" onclick="exportMarkdown()">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Markdown出力
+        </button>
+        <button class="btn-sm success" onclick="exportPhotosZip()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          写真をZIPで出力
         </button>
         <button class="btn-sm danger" onclick="clearLocal()">
           <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           ローカル削除
         </button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6">
+        <b>写真ZIPの送り方（iOS → Windows）</b><br>
+        ① ZIPをダウンロード → 「ファイル」アプリに保存<br>
+        ② 「ファイル」アプリ → ZIPを長押し → 「共有」→ OneDrive<br>
+        ③ Windows の OneDriveフォルダで受け取る<br>
+        ※ メール添付は1通25MB制限あり。大量写真はOneDrive推奨。
       </div>
     </div>
     <div style="height:20px"></div>
@@ -486,28 +462,27 @@ const S = {
   photoTags: new Set(),
   presetTags: ['軸A','軸B','軸C','要フォロー','競合','パートナー'],
   profiles: {
-    private: { gh: {token:'',owner:'',repo:'',branch:'main'}, claudeKey: '' },
-    work:    { gh: {token:'',owner:'',repo:'',branch:'main'}, claudeKey: '' },
+    private: { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
+    work:    { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
   },
-  photoData: null,      // compressed base64 (stays in IndexedDB only)
+  photoData: null,
   photoMime: 'image/jpeg',
+  currentPhotoId: null,
   ocrText: '',
   ocrDone: false,
   isRecording: false,
   recognition: null,
   mediaRecorder: null,
-  recTimerInterval: null,
+  recInterval: null,
   recSeconds: 0,
   transcriptFinal: '',
   transcriptInterim: '',
   allMemos: [],
-  tesseractWorker: null,
 };
 
-// Active profile shortcuts
-function gh(){ return S.profiles[S.activeProfile].gh }
-function claudeKey(){ return S.profiles[S.activeProfile].claudeKey }
-function ocrEngine(){ return S.activeProfile === 'work' && claudeKey() ? 'claude' : 'tesseract' }
+const prof = () => S.profiles[S.activeProfile];
+const ghConf = () => prof().gh;
+const apiKey = () => prof().claudeKey;
 
 // ============================================================
 // INDEXEDDB
@@ -515,7 +490,7 @@ function ocrEngine(){ return S.activeProfile === 'work' && claudeKey() ? 'claude
 let db;
 function initDB(){
   return new Promise((res,rej)=>{
-    const r = indexedDB.open('fieldmemo_v3', 1);
+    const r = indexedDB.open('fieldmemo_v4',1);
     r.onupgradeneeded = e => {
       const d = e.target.result;
       if(!d.objectStoreNames.contains('items')){
@@ -524,65 +499,60 @@ function initDB(){
       }
       if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv',{keyPath:'k'});
     };
-    r.onsuccess = e => { db = e.target.result; res(); };
-    r.onerror = () => rej(r.error);
+    r.onsuccess = e => { db=e.target.result; res(); };
+    r.onerror = ()=>rej(r.error);
   });
 }
-function txStore(store, mode='readonly'){ return db.transaction(store,mode).objectStore(store) }
-function dbPut(val){ return new Promise((res,rej)=>{ const r=txStore('items','readwrite').put(val); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) }) }
-function dbAll(){ return new Promise((res,rej)=>{ const r=txStore('items').index('ts').getAll(); r.onsuccess=()=>res(r.result.slice().reverse()); r.onerror=()=>rej(r.error) }) }
-function dbClear(){ return new Promise((res,rej)=>{ const r=txStore('items','readwrite').clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) }) }
-const kvGet = k => new Promise((res,rej)=>{ const r=txStore('kv').get(k); r.onsuccess=()=>res(r.result?.v); r.onerror=()=>rej(r.error) });
-const kvSet = (k,v) => new Promise((res,rej)=>{ const r=txStore('kv','readwrite').put({k,v}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+const tx = (s,m='readonly') => db.transaction(s,m).objectStore(s);
+const dbPut = v => new Promise((res,rej)=>{ const r=tx('items','readwrite').put(v); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+const dbAll = () => new Promise((res,rej)=>{ const r=tx('items').index('ts').getAll(); r.onsuccess=()=>res(r.result.slice().reverse()); r.onerror=()=>rej(r.error) });
+const dbClear = () => new Promise((res,rej)=>{ const r=tx('items','readwrite').clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+const kvGet = k => new Promise((res,rej)=>{ const r=tx('kv').get(k); r.onsuccess=()=>res(r.result?.v); r.onerror=()=>rej(r.error) });
+const kvSet = (k,v) => new Promise((res,rej)=>{ const r=tx('kv','readwrite').put({k,v}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
 
 // ============================================================
 // GITHUB API
 // ============================================================
-function ghH(){ return {'Authorization':`token ${gh().token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'} }
-function toB64(str){ return btoa(unescape(encodeURIComponent(str))) }
+function ghH(){ return {'Authorization':`token ${ghConf().token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'} }
+function toB64(s){ return btoa(unescape(encodeURIComponent(s))) }
 
-async function ghWriteJSON(item){
-  const g = gh();
+async function ghWrite(item){
+  const g = ghConf();
   if(!g.token||!g.owner||!g.repo) return {ok:false,reason:'unconfigured'};
-  // Strip imageData — only text/metadata goes to GitHub
   const payload = {...item};
-  delete payload.imageData;
+  delete payload.imageData; // never send image to GitHub
   const path = `memos/${item.id}.json`;
   const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/${path}`;
   const body = {message:`memo: ${item.id}`,content:toB64(JSON.stringify(payload,null,2)),branch:g.branch||'main'};
-  try{ const chk=await fetch(url,{headers:ghH()}); if(chk.ok){ const ex=await chk.json(); body.sha=ex.sha } }catch(_){}
+  try{ const c=await fetch(url,{headers:ghH()}); if(c.ok){const e=await c.json();body.sha=e.sha} }catch(_){}
   const r = await fetch(url,{method:'PUT',headers:ghH(),body:JSON.stringify(body)});
   return {ok:r.ok,status:r.status};
 }
 
 async function ghPull(){
-  const g = gh();
+  const g = ghConf();
   if(!g.token||!g.owner||!g.repo){ toast('GitHub設定が未完了です','err'); return }
   showLoader('GitHubから取得中…');
   try{
-    const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/memos?ref=${g.branch||'main'}`;
-    const r = await fetch(url,{headers:ghH()});
+    const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/contents/memos?ref=${g.branch||'main'}`,{headers:ghH()});
     if(r.status===404){ hideLoader(); toast('memosフォルダがまだありません','info'); return }
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const files = await r.json();
-    let added = 0;
+    let n=0;
     for(const f of files){
       if(!f.name.endsWith('.json')) continue;
-      const jr = await fetch(f.download_url);
-      const item = await jr.json();
-      item.ghSynced = true;
-      // Note: imageData is NOT in GitHub JSON, so pulled items won't have local image
-      await dbPut(item);
-      added++;
+      const item = await (await fetch(f.download_url)).json();
+      item.ghSynced=true;
+      await dbPut(item); n++;
     }
-    hideLoader(); toast(`${added}件を同期しました`,'ok');
+    hideLoader(); toast(`${n}件を同期しました`,'ok');
     if(S.panel==='history') loadHistory();
   }catch(e){ hideLoader(); toast(`同期失敗: ${e.message}`,'err') }
 }
 
 async function testGH(){
   await saveSettings();
-  const g = gh();
+  const g = ghConf();
   if(!g.token||!g.owner||!g.repo){ toast('設定を入力してください','err'); return }
   showLoader('接続確認中…');
   const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}`,{headers:ghH()});
@@ -594,42 +564,18 @@ async function testGH(){
 }
 
 // ============================================================
-// TESSERACT OCR
+// CLAUDE API OCR
 // ============================================================
-async function ensureTesseractWorker(){
-  if(S.tesseractWorker) return S.tesseractWorker;
-  showOCRProgress(0,'Tesseract.js 初期化中…');
-  S.tesseractWorker = await Tesseract.createWorker(['jpn','chi_sim','eng'], 1, {
-    logger: m => {
-      if(m.status === 'recognizing text'){
-        showOCRProgress(Math.round(m.progress * 100), `認識中… ${Math.round(m.progress*100)}%`);
-      } else if(m.status === 'loading language traineddata'){
-        showOCRProgress(10, `言語データ読込中…`);
-      } else if(m.status === 'initializing api'){
-        showOCRProgress(5, '初期化中…');
-      }
-    }
-  });
-  return S.tesseractWorker;
-}
-
-async function runOCRTesseract(imageBase64){
-  const worker = await ensureTesseractWorker();
-  showOCRProgress(50, '解析中…');
-  const { data: { text } } = await worker.recognize(imageBase64);
-  return text.trim();
-}
-
-async function runOCRClaude(imageBase64, mimeType){
-  const key = claudeKey();
-  if(!key) throw new Error('Claude APIキーが未設定です');
-  const pureB64 = imageBase64.replace(/^data:image\/\w+;base64,/,'');
+async function claudeOCR(imageB64, mime){
+  const key = apiKey();
+  if(!key) throw new Error('APIキーが未設定です（設定タブで入力）');
+  const b64 = imageB64.replace(/^data:image\/\w+;base64,/,'');
   const body = {
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    messages: [{role:'user',content:[
-      {type:'image',source:{type:'base64',media_type:mimeType||'image/jpeg',data:pureB64}},
-      {type:'text',text:'この画像に含まれるテキストをすべて抽出してください。テキストがない場合は「（テキストなし）」と返してください。抽出テキストのみを返し、説明は不要です。'}
+    model:'claude-haiku-4-5-20251001',
+    max_tokens:1024,
+    messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:mime||'image/jpeg',data:b64}},
+      {type:'text',text:'この画像に含まれるテキストをすべて抽出してください。英語・中国語・日本語すべて対応します。テキストがない場合は「（テキストなし）」とだけ返してください。説明は不要で抽出テキストのみ返してください。'}
     ]}]
   };
   const r = await fetch('https://api.anthropic.com/v1/messages',{
@@ -637,331 +583,285 @@ async function runOCRClaude(imageBase64, mimeType){
     headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
     body:JSON.stringify(body)
   });
-  if(!r.ok){ const e=await r.json(); throw new Error(e.error?.message||`API error ${r.status}`) }
-  const d = await r.json();
-  return d.content[0].text.trim();
+  if(!r.ok){ const e=await r.json(); throw new Error(e.error?.message||`API ${r.status}`) }
+  return (await r.json()).content[0].text.trim();
 }
 
 // ============================================================
-// PHOTO FLOW: capture → OCR → then enable save
+// IMAGE COMPRESSION
 // ============================================================
-function compressImage(file, maxDim=1200, quality=0.78){
+function compress(file, maxDim=1200, q=0.78){
   return new Promise(res=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let w=img.width, h=img.height;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
         if(w>maxDim||h>maxDim){ if(w>h){h=Math.round(h*maxDim/w);w=maxDim}else{w=Math.round(w*maxDim/h);h=maxDim} }
-        const cv = document.createElement('canvas');
-        cv.width=w; cv.height=h;
+        const cv=document.createElement('canvas');
+        cv.width=w;cv.height=h;
         cv.getContext('2d').drawImage(img,0,0,w,h);
-        res(cv.toDataURL('image/jpeg',quality));
+        res(cv.toDataURL('image/jpeg',q));
       };
-      img.src = e.target.result;
+      img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   });
 }
 
+// ============================================================
+// PHOTO FLOW
+// ============================================================
 async function onPhotoSelected(input){
-  const file = input.files[0];
-  if(!file) return;
+  const file=input.files[0]; if(!file) return;
   showLoader('画像を処理中…');
-  S.photoData = await compressImage(file);
-  S.photoMime = 'image/jpeg';
-  S.ocrText = '';
-  S.ocrDone = false;
-  document.getElementById('photo-preview').src = S.photoData;
+  S.photoData=await compress(file);
+  S.photoMime='image/jpeg';
+  S.ocrText=''; S.ocrDone=false;
+  S.currentPhotoId=null;
+  document.getElementById('photo-preview').src=S.photoData;
   document.getElementById('photo-preview-wrap').classList.add('visible');
+  document.getElementById('dl-current-btn').style.display='';
+  document.getElementById('reanalyze-btn').style.display='none';
   document.getElementById('ocr-result').classList.remove('visible');
-  document.getElementById('reanalyze-btn').style.display = 'none';
-  document.getElementById('photo-save-btn').disabled = true;
-  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
-  input.value = '';
-  hideLoader();
-  // Auto-start OCR
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='OCR完了後に保存できます';
+  input.value=''; hideLoader();
   await runOCR();
 }
 
 async function runOCR(){
   if(!S.photoData){ toast('写真を選択してください','err'); return }
-  S.ocrDone = false;
-  document.getElementById('photo-save-btn').disabled = true;
-  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
+  S.ocrDone=false;
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='解析中…';
   document.getElementById('ocr-progress-wrap').classList.add('visible');
   document.getElementById('ocr-result').classList.remove('visible');
-  // Show engine badge
-  const engine = ocrEngine();
-  const badgeClass = engine === 'claude' ? 'claude' : 'tesseract';
-  const badgeText = engine === 'claude' ? 'Claude API' : 'Tesseract.js';
-  document.getElementById('ocr-engine-badge').className = `ocr-engine-badge ${badgeClass}`;
-  document.getElementById('ocr-engine-badge').textContent = badgeText;
-  document.getElementById('ocr-result-badge').className = `ocr-engine-badge ${badgeClass}`;
-  document.getElementById('ocr-result-badge').textContent = badgeText;
-
+  setOCRProgress(20,'Claude APIに送信中…');
   try{
-    let text = '';
-    if(engine === 'claude'){
-      showOCRProgress(10,'Claude APIに送信中…');
-      text = await runOCRClaude(S.photoData, S.photoMime);
-    } else {
-      text = await runOCRTesseract(S.photoData);
-    }
+    setOCRProgress(50,'解析中…');
+    const text = await claudeOCR(S.photoData, S.photoMime);
     S.ocrText = text || '（テキストなし）';
-    document.getElementById('ocr-text').textContent = S.ocrText;
+    document.getElementById('ocr-text').textContent=S.ocrText;
     document.getElementById('ocr-progress-wrap').classList.remove('visible');
     document.getElementById('ocr-result').classList.add('visible');
-    document.getElementById('reanalyze-btn').style.display = '';
-    S.ocrDone = true;
-    document.getElementById('photo-save-btn').disabled = false;
-    document.getElementById('photo-save-btn').textContent = '写真を保存（JSONのみGitHub）';
+    document.getElementById('reanalyze-btn').style.display='';
+    S.ocrDone=true;
+    document.getElementById('photo-save-btn').disabled=false;
+    document.getElementById('photo-save-btn').textContent='写真を保存（GitHubにはテキストのみ）';
     toast('OCR完了','ok');
   }catch(e){
     document.getElementById('ocr-progress-wrap').classList.remove('visible');
-    document.getElementById('reanalyze-btn').style.display = '';
-    S.ocrDone = true; // allow save even if OCR failed
-    document.getElementById('photo-save-btn').disabled = false;
-    document.getElementById('photo-save-btn').textContent = '写真を保存（OCR失敗）';
+    document.getElementById('reanalyze-btn').style.display='';
+    S.ocrDone=true;
+    document.getElementById('photo-save-btn').disabled=false;
+    document.getElementById('photo-save-btn').textContent='写真を保存（OCR失敗）';
     toast(`OCR失敗: ${e.message}`,'err');
   }
 }
 
-function showOCRProgress(pct, label){
-  document.getElementById('ocr-progress-bar').style.width = pct + '%';
-  document.getElementById('ocr-progress-label').textContent = label;
+function setOCRProgress(pct,label){
+  document.getElementById('ocr-bar').style.width=pct+'%';
+  document.getElementById('ocr-label').textContent=label;
 }
 
 function clearPhoto(){
-  S.photoData = null; S.ocrText = ''; S.ocrDone = false;
+  S.photoData=null; S.ocrText=''; S.ocrDone=false; S.currentPhotoId=null;
   document.getElementById('photo-preview-wrap').classList.remove('visible');
   document.getElementById('ocr-progress-wrap').classList.remove('visible');
   document.getElementById('ocr-result').classList.remove('visible');
-  document.getElementById('photo-preview').src = '';
-  document.getElementById('photo-save-btn').disabled = true;
-  document.getElementById('photo-save-btn').textContent = 'OCR完了後に保存できます';
-  document.getElementById('reanalyze-btn').style.display = 'none';
+  document.getElementById('photo-preview').src='';
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='OCR完了後に保存できます';
+  document.getElementById('reanalyze-btn').style.display='none';
+  document.getElementById('dl-current-btn').style.display='none';
+}
+
+// ============================================================
+// PHOTO DOWNLOAD
+// ============================================================
+function downloadPhoto(base64, filename){
+  const a=document.createElement('a');
+  a.href=base64;
+  a.download=filename;
+  a.click();
+}
+
+function downloadCurrentPhoto(){
+  if(!S.photoData){ toast('写真がありません','err'); return }
+  const id = S.currentPhotoId || `photo_${fmtId()}`;
+  downloadPhoto(S.photoData, `${id}.jpg`);
+  toast('写真をダウンロードしました','ok');
+}
+
+async function exportPhotosZip(){
+  const all = await dbAll();
+  const photos = all.filter(i=>i.type==='photo'&&i.imageData);
+  if(!photos.length){ toast('端末に写真データがありません','err'); return }
+  showLoader(`ZIPを作成中… ${photos.length}枚`);
+  try{
+    const zip = new JSZip();
+    const folder = zip.folder('fieldmemo_photos');
+    photos.forEach(item=>{
+      const b64 = item.imageData.replace(/^data:image\/\w+;base64,/,'');
+      const ts = fmtTs(item.timestamp).replace(/[\/: ]/g,'-');
+      const tags = (item.tags||[]).length ? `_${item.tags.join('-')}` : '';
+      folder.file(`${item.id}${tags}.jpg`, b64, {base64:true});
+    });
+    // Also add index.md with OCR texts
+    const index = photos.map(item=>{
+      const ts = fmtTs(item.timestamp);
+      const tags = (item.tags||[]).join(', ');
+      return `## ${ts} [${tags}]\n\n${item.ocrText||'（OCRなし）'}\n${item.note?`\nメモ: ${item.note}`:''}\n`;
+    }).join('\n---\n\n');
+    zip.file('ocr_index.md',`# FIELDMEMO 写真OCRインデックス\n生成: ${new Date().toLocaleString('ja-JP')}\n総枚数: ${photos.length}枚\n\n---\n\n${index}`);
+    const blob = await zip.generateAsync({type:'blob'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `fieldmemo_photos_${new Date().toISOString().slice(0,10)}.zip`;
+    a.click();
+    hideLoader(); toast(`${photos.length}枚をZIPに書き出しました`,'ok');
+  }catch(e){ hideLoader(); toast(`ZIP作成失敗: ${e.message}`,'err') }
 }
 
 // ============================================================
 // VOICE
 // ============================================================
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-async function toggleRecording(){
-  if(S.isRecording) stopRecording();
-  else await startRecording();
-}
+const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+async function toggleRecording(){ S.isRecording ? stopRecording() : await startRecording() }
 async function startRecording(){
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    S.mediaRecorder = new MediaRecorder(stream);
-    S.mediaRecorder.start();
-  }catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
-  S.isRecording = true;
-  S.transcriptFinal = ''; S.transcriptInterim = '';
-  S.recSeconds = 0;
+  try{ const s=await navigator.mediaDevices.getUserMedia({audio:true}); S.mediaRecorder=new MediaRecorder(s); S.mediaRecorder.start() }
+  catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
+  S.isRecording=true; S.transcriptFinal=''; S.transcriptInterim=''; S.recSeconds=0;
   updateTranscriptUI();
-  S.recTimerInterval = setInterval(()=>{
+  S.recInterval=setInterval(()=>{
     S.recSeconds++;
-    const m=Math.floor(S.recSeconds/60), s=S.recSeconds%60;
-    document.getElementById('rec-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const m=Math.floor(S.recSeconds/60),s=S.recSeconds%60;
+    document.getElementById('rec-timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   },1000);
   if(SR){
-    S.recognition = new SR();
-    S.recognition.lang = 'ja-JP';
-    S.recognition.continuous = true;
-    S.recognition.interimResults = true;
-    S.recognition.onresult = e => {
-      let interim = '';
+    S.recognition=new SR();
+    S.recognition.lang='ja-JP'; S.recognition.continuous=true; S.recognition.interimResults=true;
+    S.recognition.onresult=e=>{
+      let interim='';
       for(let i=e.resultIndex;i<e.results.length;i++){
-        if(e.results[i].isFinal) S.transcriptFinal += e.results[i][0].transcript;
-        else interim += e.results[i][0].transcript;
+        if(e.results[i].isFinal) S.transcriptFinal+=e.results[i][0].transcript;
+        else interim+=e.results[i][0].transcript;
       }
-      S.transcriptInterim = interim;
-      updateTranscriptUI();
+      S.transcriptInterim=interim; updateTranscriptUI();
     };
-    S.recognition.onerror = e => { if(e.error!=='aborted') toast(`音声認識エラー: ${e.error}`,'err') };
+    S.recognition.onerror=e=>{ if(e.error!=='aborted') toast(`音声認識エラー: ${e.error}`,'err') };
     try{ S.recognition.start() }catch(_){}
   }
-  updateRecordUI();
+  updateRecUI();
 }
 function stopRecording(){
-  S.isRecording = false;
-  clearInterval(S.recTimerInterval);
-  document.getElementById('rec-timer').textContent = '';
-  if(S.recognition){ try{ S.recognition.stop() }catch(_){} }
-  if(S.mediaRecorder && S.mediaRecorder.state!=='inactive'){
-    S.mediaRecorder.stop();
-    S.mediaRecorder.stream.getTracks().forEach(t=>t.stop());
-  }
-  S.transcriptInterim = '';
-  updateTranscriptUI();
-  updateRecordUI();
+  S.isRecording=false; clearInterval(S.recInterval); document.getElementById('rec-timer').textContent='';
+  if(S.recognition){ try{S.recognition.stop()}catch(_){} }
+  if(S.mediaRecorder&&S.mediaRecorder.state!=='inactive'){ S.mediaRecorder.stop(); S.mediaRecorder.stream.getTracks().forEach(t=>t.stop()) }
+  S.transcriptInterim=''; updateTranscriptUI(); updateRecUI();
 }
-function updateRecordUI(){
-  const btn = document.getElementById('record-btn');
-  const status = document.getElementById('record-status');
-  const micI = document.getElementById('rec-icon-mic');
-  const stopI = document.getElementById('rec-icon-stop');
-  if(S.isRecording){
-    btn.classList.add('recording'); status.textContent='録音中… タップで停止';
-    status.className='record-status active'; micI.style.display='none'; stopI.style.display='';
-  }else{
-    btn.classList.remove('recording'); status.textContent='タップして録音開始';
-    status.className='record-status'; micI.style.display=''; stopI.style.display='none';
-  }
+function updateRecUI(){
+  const btn=document.getElementById('record-btn'),st=document.getElementById('rec-status');
+  const mic=document.getElementById('rec-mic'),stop=document.getElementById('rec-stop');
+  if(S.isRecording){ btn.classList.add('recording'); st.textContent='録音中… タップで停止'; st.className='record-status active'; mic.style.display='none'; stop.style.display='' }
+  else{ btn.classList.remove('recording'); st.textContent='タップして録音開始'; st.className='record-status'; mic.style.display=''; stop.style.display='none' }
 }
 function updateTranscriptUI(){
-  const box = document.getElementById('transcript-box');
-  const ph = document.getElementById('transcript-ph');
-  if(S.transcriptFinal || S.transcriptInterim){
-    if(ph) ph.style.display = 'none';
-    box.innerHTML = esc(S.transcriptFinal);
-    if(S.transcriptInterim){
-      const span = document.createElement('span');
-      span.style.color = 'var(--muted)';
-      span.textContent = S.transcriptInterim;
-      box.appendChild(span);
-    }
+  const box=document.getElementById('transcript-box');
+  if(S.transcriptFinal||S.transcriptInterim){
+    box.innerHTML=esc(S.transcriptFinal);
+    if(S.transcriptInterim){ const sp=document.createElement('span'); sp.style.color='var(--muted)'; sp.textContent=S.transcriptInterim; box.appendChild(sp) }
   }else{
-    box.innerHTML = '<span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>';
+    box.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>';
   }
 }
-function clearTranscript(){
-  S.transcriptFinal = ''; S.transcriptInterim = '';
-  updateTranscriptUI();
-}
+function clearTranscript(){ S.transcriptFinal=''; S.transcriptInterim=''; updateTranscriptUI() }
 
 // ============================================================
 // SAVE
 // ============================================================
 function genId(){
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
   return `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}_${Math.random().toString(36).slice(2,6)}`;
 }
+function fmtId(){ const now=new Date(),pad=n=>String(n).padStart(2,'0'); return `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}` }
 
 async function saveMemo(){
-  const text = document.getElementById('memo-text').value.trim();
-  const voice = S.transcriptFinal.trim();
-  if(!text && !voice){ toast('テキストまたは録音が必要です','err'); return }
-  const btn = document.getElementById('memo-save-btn');
-  btn.disabled = true;
-  const item = {
-    id: genId(), type:'memo', timestamp: new Date().toISOString(),
-    text, voiceTranscript: voice,
-    tags: [...S.memoTags], profile: S.activeProfile, ghSynced: false
-  };
+  const text=document.getElementById('memo-text').value.trim();
+  const voice=S.transcriptFinal.trim();
+  if(!text&&!voice){ toast('テキストまたは録音が必要です','err'); return }
+  const btn=document.getElementById('memo-save-btn');
+  btn.disabled=true;
+  const item={id:genId(),type:'memo',timestamp:new Date().toISOString(),text,voiceTranscript:voice,tags:[...S.memoTags],profile:S.activeProfile,ghSynced:false};
   await dbPut(item);
-  let ghR = {ok:false,reason:'unconfigured'};
-  const g = gh();
-  if(g.token && g.owner && g.repo){
-    try{ ghR = await ghWriteJSON(item) }catch(e){ ghR = {ok:false,reason:e.message} }
-    if(ghR.ok){ item.ghSynced=true; await dbPut(item) }
-  }
-  document.getElementById('memo-text').value = '';
-  clearTranscript();
-  S.memoTags.clear();
-  renderTagChips('memo');
-  btn.disabled = false;
-  if(ghR.reason==='unconfigured') toast('ローカルに保存しました');
-  else if(ghR.ok) toast('保存 + GitHub同期完了','ok');
-  else toast(`保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+  let ghR={ok:false,reason:'unconfigured'};
+  const g=ghConf();
+  if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
+  document.getElementById('memo-text').value=''; clearTranscript(); S.memoTags.clear(); renderTagChips('memo');
+  btn.disabled=false;
+  ghR.reason==='unconfigured'?toast('ローカルに保存しました'):ghR.ok?toast('保存 + GitHub同期完了','ok'):toast(`保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
 }
 
 async function savePhoto(){
   if(!S.photoData){ toast('写真を選択してください','err'); return }
-  const btn = document.getElementById('photo-save-btn');
-  btn.disabled = true;
-  const note = document.getElementById('photo-note').value.trim();
-  const item = {
-    id: genId(), type:'photo', timestamp: new Date().toISOString(),
-    imageData: S.photoData,   // stored in IndexedDB only
-    ocrText: S.ocrText,
-    ocrEngine: ocrEngine(),
-    note, tags: [...S.photoTags],
-    profile: S.activeProfile, ghSynced: false
-  };
-  // Save full item (with imageData) to IndexedDB
+  const btn=document.getElementById('photo-save-btn'); btn.disabled=true;
+  const note=document.getElementById('photo-note').value.trim();
+  const id=genId(); S.currentPhotoId=id;
+  const item={id,type:'photo',timestamp:new Date().toISOString(),imageData:S.photoData,ocrText:S.ocrText,note,tags:[...S.photoTags],profile:S.activeProfile,ghSynced:false};
   await dbPut(item);
-  // Push JSON only (imageData stripped in ghWriteJSON) to GitHub
-  let ghR = {ok:false,reason:'unconfigured'};
-  const g = gh();
-  if(g.token && g.owner && g.repo){
-    try{ ghR = await ghWriteJSON(item) }catch(e){ ghR = {ok:false,reason:e.message} }
-    if(ghR.ok){ item.ghSynced=true; await dbPut(item) }
-  }
-  clearPhoto();
-  document.getElementById('photo-note').value = '';
-  S.photoTags.clear();
-  renderTagChips('photo');
-  btn.disabled = false;
-  btn.textContent = 'OCR完了後に保存できます';
-  if(ghR.reason==='unconfigured') toast('端末に保存しました（画像＋テキスト）');
-  else if(ghR.ok) toast('保存完了。GitHubにはテキストのみ送信','ok');
-  else toast(`端末保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+  let ghR={ok:false,reason:'unconfigured'};
+  const g=ghConf();
+  if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
+  clearPhoto(); document.getElementById('photo-note').value=''; S.photoTags.clear(); renderTagChips('photo');
+  btn.disabled=false; btn.textContent='OCR完了後に保存できます';
+  ghR.reason==='unconfigured'?toast('端末に保存しました（画像あり）'):ghR.ok?toast('保存完了。GitHubにはテキストのみ送信','ok'):toast(`端末保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
 }
 
 // ============================================================
 // HISTORY
 // ============================================================
-async function loadHistory(){
-  const all = await dbAll();
-  S.allMemos = all;
-  renderHistory(all);
-}
+async function loadHistory(){ const all=await dbAll(); S.allMemos=all; renderHistory(all) }
 
 function renderHistory(items){
-  const filtered = S.filterTag ? items.filter(m=>(m.tags||[]).includes(S.filterTag)) : items;
-  document.getElementById('tl-count').textContent = `${filtered.length} 件`;
-  const allTags = [...new Set(items.flatMap(m=>m.tags||[]))];
-  const fb = document.getElementById('filter-bar');
-  fb.innerHTML = '';
+  const filtered=S.filterTag?items.filter(m=>(m.tags||[]).includes(S.filterTag)):items;
+  document.getElementById('tl-count').textContent=`${filtered.length} 件`;
+  const allTags=[...new Set(items.flatMap(m=>m.tags||[]))];
+  const fb=document.getElementById('filter-bar'); fb.innerHTML='';
   [{label:'すべて',value:null},...allTags.map(t=>({label:t,value:t}))].forEach(({label,value})=>{
-    const b = document.createElement('button');
-    b.className = 'filter-chip' + (S.filterTag===value?' on':'');
-    b.textContent = label;
-    b.onclick = () => { S.filterTag=value; renderHistory(items) };
-    fb.appendChild(b);
+    const b=document.createElement('button'); b.className='filter-chip'+(S.filterTag===value?' on':'');
+    b.textContent=label; b.onclick=()=>{S.filterTag=value;renderHistory(items)}; fb.appendChild(b);
   });
-  const list = document.getElementById('timeline-list');
-  if(!filtered.length){
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">[ ]</div>記録がありません</div>`;
-    return;
-  }
-  list.innerHTML = '';
+  const list=document.getElementById('timeline-list');
+  if(!filtered.length){ list.innerHTML=`<div class="empty-state"><div class="empty-icon">[ ]</div>記録がありません</div>`; return }
+  list.innerHTML='';
   filtered.forEach(item=>{
-    const card = document.createElement('div');
-    card.className = 'memo-card';
-    const isExp = S.expandedId === item.id;
-    const ts = fmtTs(item.timestamp);
-    const typeLabel = item.type==='photo' ? '写真' : 'メモ';
-    const typeClass = item.type==='photo' ? 'photo' : 'memo';
-    const syncLabel = item.ghSynced ? '<span class="card-sync ok">✓ GH</span>' : '<span class="card-sync">● local</span>';
-    const tagsHtml = (item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
-    let bodyHtml = '';
-    if(item.type === 'memo'){
-      const txt = (item.text||'') + (item.voiceTranscript ? `\n[音声] ${item.voiceTranscript}` : '');
-      bodyHtml = `<div class="card-body${isExp?'':' clamp'}">${esc(txt)}</div>`;
-    } else {
-      const ocrPreview = item.ocrText || '';
-      bodyHtml = ocrPreview ? `<div class="card-body${isExp?'':' clamp'}">${esc(ocrPreview)}</div>` : '';
-      if(isExp && item.imageData){
-        bodyHtml += `<img class="card-img-thumb" src="${item.imageData}" alt="">`;
-        bodyHtml += `<div class="card-img-note">※ 元画像はこの端末のみ保持。GitHubにはテキストのみ保存済。</div>`;
+    const card=document.createElement('div'); card.className='memo-card';
+    const isExp=S.expandedId===item.id;
+    const tagsHtml=(item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
+    let bodyHtml='';
+    if(item.type==='memo'){
+      const txt=(item.text||'')+(item.voiceTranscript?`\n[音声] ${item.voiceTranscript}`:'');
+      bodyHtml=`<div class="card-body${isExp?'':' clamp'}">${esc(txt)}</div>`;
+    }else{
+      bodyHtml=item.ocrText?`<div class="card-body${isExp?'':' clamp'}">${esc(item.ocrText)}</div>`:'';
+      if(isExp){
+        if(item.imageData) bodyHtml+=`<img class="card-thumb" src="${item.imageData}" alt="">`;
+        // Download button (only if imageData exists in this device)
+        if(item.imageData) bodyHtml+=`<div class="card-dl-row"><button class="btn-sm success" onclick="event.stopPropagation();downloadPhoto('${item.imageData}','${item.id}.jpg')"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 写真をダウンロード</button></div>`;
+        if(!item.imageData) bodyHtml+=`<div class="card-note">※ 写真は別デバイスで取得したため、この端末にはありません</div>`;
       }
     }
-    card.innerHTML = `
+    card.innerHTML=`
       <div class="card-head">
-        <span class="card-ts">${ts}</span>
-        <span class="card-type ${typeClass}">${typeLabel}</span>
-        ${syncLabel}
+        <span class="card-ts">${fmtTs(item.timestamp)}</span>
+        <span class="card-type ${item.type==='photo'?'photo':'memo'}">${item.type==='photo'?'写真':'メモ'}</span>
+        ${item.ghSynced?'<span class="card-sync ok">✓ GH</span>':'<span class="card-sync">● local</span>'}
       </div>
-      ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+      ${tagsHtml?`<div class="card-tags">${tagsHtml}</div>`:''}
       ${bodyHtml}
     `;
-    card.onclick = () => { S.expandedId = isExp ? null : item.id; renderHistory(S.allMemos) };
+    card.onclick=()=>{ S.expandedId=isExp?null:item.id; renderHistory(S.allMemos) };
     list.appendChild(card);
   });
 }
@@ -970,106 +870,78 @@ function renderHistory(items){
 // TAGS
 // ============================================================
 function renderTagChips(panel){
-  const wrap = document.getElementById(`${panel}-tags`);
-  if(!wrap) return;
-  const selected = panel === 'memo' ? S.memoTags : S.photoTags;
-  wrap.innerHTML = '';
-  S.presetTags.forEach(tag=>{
-    const btn = document.createElement('button');
-    btn.className = 'tag-chip' + (selected.has(tag) ? ' on' : '');
-    btn.textContent = tag;
-    btn.onclick = () => { selected.has(tag) ? selected.delete(tag) : selected.add(tag); renderTagChips(panel) };
-    wrap.appendChild(btn);
-  });
-  selected.forEach(tag=>{
-    if(!S.presetTags.includes(tag)){
-      const btn = document.createElement('button');
-      btn.className = 'tag-chip on';
-      btn.textContent = tag;
-      btn.onclick = () => { selected.delete(tag); renderTagChips(panel) };
-      wrap.appendChild(btn);
-    }
-  });
+  const wrap=document.getElementById(`${panel}-tags`); if(!wrap) return;
+  const sel=panel==='memo'?S.memoTags:S.photoTags;
+  wrap.innerHTML='';
+  S.presetTags.forEach(tag=>{ const b=document.createElement('button'); b.className='tag-chip'+(sel.has(tag)?' on':''); b.textContent=tag; b.onclick=()=>{sel.has(tag)?sel.delete(tag):sel.add(tag);renderTagChips(panel)}; wrap.appendChild(b) });
+  sel.forEach(tag=>{ if(!S.presetTags.includes(tag)){const b=document.createElement('button');b.className='tag-chip on';b.textContent=tag;b.onclick=()=>{sel.delete(tag);renderTagChips(panel)};wrap.appendChild(b)} });
 }
-function addTag(panel){
-  const inp = document.getElementById(`${panel}-tag-input`);
-  const val = inp.value.trim();
-  if(!val) return;
-  (panel==='memo' ? S.memoTags : S.photoTags).add(val);
-  inp.value = '';
-  renderTagChips(panel);
-}
+function addTag(panel){ const inp=document.getElementById(`${panel}-tag-input`),val=inp.value.trim(); if(!val) return; (panel==='memo'?S.memoTags:S.photoTags).add(val); inp.value=''; renderTagChips(panel) }
 
 // ============================================================
-// SETTINGS & PROFILES
+// SETTINGS / PROFILE
 // ============================================================
 function switchProfile(name){
-  S.activeProfile = name;
-  document.getElementById('tab-private').className = `profile-tab${name==='private'?' active private':''}`;
-  document.getElementById('tab-work').className = `profile-tab work${name==='work'?' active':''}`;
-  document.getElementById('settings-private').style.display = name==='private' ? '' : 'none';
-  document.getElementById('settings-work').style.display = name==='work' ? '' : 'none';
-  const badge = document.getElementById('profile-badge');
-  if(name === 'private'){
-    badge.className = 'profile-badge private';
-    badge.textContent = 'PRIVATE';
-    document.getElementById('profile-description').innerHTML = 'OCRエンジン：Tesseract.js（ブラウザ内・無料）<br>保存先：GitHub';
-  }else{
-    badge.className = 'profile-badge work';
-    badge.textContent = 'WORK';
-    document.getElementById('profile-description').innerHTML = `OCRエンジン：${claudeKey() ? 'Claude API（設定済）' : 'Tesseract.js（APIキー未設定）'}<br>保存先：GitHub（OneDriveは後から対応）`;
-  }
+  S.activeProfile=name;
+  document.getElementById('ptab-private').className=`ptab${name==='private'?' active private':''}`;
+  document.getElementById('ptab-work').className=`ptab work${name==='work'?' active':''}`;
+  document.getElementById('pane-private').style.display=name==='private'?'':'none';
+  document.getElementById('pane-work').style.display=name==='work'?'':'none';
+  const badge=document.getElementById('profile-badge');
+  badge.className=`profile-badge ${name}`;
+  badge.textContent=name==='private'?'PRIVATE':'WORK';
+  document.getElementById('profile-desc').innerHTML=
+    name==='private'
+      ?`OCR：Claude API (Haiku 4.5)　約0.43円/枚<br>保存先：GitHub`
+      :`OCR：Claude API (Haiku 4.5)　法人ID<br>保存先：GitHub（OneDrive対応は後から）`;
   updateGhStatus();
-  kvSet('activeProfile', name);
+  checkApiKey();
+  kvSet('activeProfile',name);
+}
+
+function checkApiKey(){
+  const warn=document.getElementById('api-warn');
+  if(S.panel==='photo') warn.classList.toggle('visible',!apiKey());
 }
 
 async function saveSettings(){
-  S.profiles.private.gh.token  = document.getElementById('s-token').value.trim();
-  S.profiles.private.gh.owner  = document.getElementById('s-owner').value.trim();
-  S.profiles.private.gh.repo   = document.getElementById('s-repo').value.trim();
-  S.profiles.private.gh.branch = document.getElementById('s-branch').value.trim() || 'main';
-  S.profiles.work.claudeKey    = document.getElementById('s-claude-work').value.trim();
-  S.profiles.work.gh.token  = document.getElementById('s-token-work').value.trim();
-  S.profiles.work.gh.owner  = document.getElementById('s-owner-work').value.trim();
-  S.profiles.work.gh.repo   = document.getElementById('s-repo-work').value.trim();
-  S.profiles.work.gh.branch = document.getElementById('s-branch-work').value.trim() || 'main';
-  await kvSet('profiles', S.profiles);
-  updateGhStatus();
+  S.profiles.private.claudeKey=document.getElementById('s-claude-private').value.trim();
+  S.profiles.private.gh.token =document.getElementById('s-token').value.trim();
+  S.profiles.private.gh.owner =document.getElementById('s-owner').value.trim();
+  S.profiles.private.gh.repo  =document.getElementById('s-repo').value.trim();
+  S.profiles.private.gh.branch=document.getElementById('s-branch').value.trim()||'main';
+  S.profiles.work.claudeKey   =document.getElementById('s-claude-work').value.trim();
+  S.profiles.work.gh.token    =document.getElementById('s-token-work').value.trim();
+  S.profiles.work.gh.owner    =document.getElementById('s-owner-work').value.trim();
+  S.profiles.work.gh.repo     =document.getElementById('s-repo-work').value.trim();
+  S.profiles.work.gh.branch   =document.getElementById('s-branch-work').value.trim()||'main';
+  await kvSet('profiles',S.profiles);
+  updateGhStatus(); checkApiKey();
   toast('設定を保存しました','ok');
 }
 
 async function saveTags(){
-  S.presetTags = document.getElementById('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
-  await kvSet('presetTags', S.presetTags);
+  S.presetTags=document.getElementById('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  await kvSet('presetTags',S.presetTags);
   renderTagChips('memo'); renderTagChips('photo');
   toast('タグを更新しました','ok');
 }
 
-async function exportAll(){
-  const all = await dbAll();
-  if(!all.length){ toast('記録がありません','err'); return }
-  const lines = all.map(item=>{
-    const ts = fmtTs(item.timestamp);
-    const tags = (item.tags||[]).length ? `[${item.tags.join(', ')}] ` : '';
-    if(item.type === 'photo'){
-      return `## 📷 ${ts} ${tags}\n\n${item.ocrText ? `**OCR:** ${item.ocrText}` : ''}\n${item.note ? `**メモ:** ${item.note}` : ''}`;
-    }
-    const body = [item.text, item.voiceTranscript && `[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n');
-    return `## 📝 ${ts} ${tags}\n\n${body}`;
+async function exportMarkdown(){
+  const all=await dbAll(); if(!all.length){toast('記録がありません','err');return}
+  const lines=all.map(item=>{
+    const ts=fmtTs(item.timestamp),tags=(item.tags||[]).length?`[${item.tags.join(', ')}] `:'';
+    if(item.type==='photo') return `## 📷 ${ts} ${tags}\n\n${item.ocrText?`**OCR:** ${item.ocrText}`:''}${item.note?`\n**メモ:** ${item.note}`:''}`;
+    return `## 📝 ${ts} ${tags}\n\n${[item.text,item.voiceTranscript&&`[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n')}`;
   });
-  const md = `# FIELDMEMO Export\n生成日時: ${new Date().toLocaleString('ja-JP')}\n総件数: ${all.length}件\n\n---\n\n${lines.join('\n\n---\n\n')}`;
-  const blob = new Blob([md],{type:'text/markdown'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `fieldmemo_${new Date().toISOString().slice(0,10)}.md`;
-  a.click();
+  const md=`# FIELDMEMO Export\n生成: ${new Date().toLocaleString('ja-JP')}\n総件数: ${all.length}件\n\n---\n\n${lines.join('\n\n---\n\n')}`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download=`fieldmemo_${new Date().toISOString().slice(0,10)}.md`; a.click();
 }
 
 async function clearLocal(){
   if(!confirm('ローカルの全記録を削除しますか？\nGitHubのデータは削除されません。')) return;
-  await dbClear();
-  if(S.panel === 'history') loadHistory();
-  toast('削除しました');
+  await dbClear(); if(S.panel==='history') loadHistory(); toast('削除しました');
 }
 
 // ============================================================
@@ -1080,56 +952,39 @@ function showPanel(name){
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));
   document.getElementById(`panel-${name}`).classList.add('active');
   document.getElementById(`tab-btn-${name}`).classList.add('active');
-  S.panel = name;
-  if(name === 'history') loadHistory();
-  if(name === 'settings') fillSettingsForm();
+  S.panel=name;
+  if(name==='history') loadHistory();
+  if(name==='settings') fillForm();
+  if(name==='photo') checkApiKey();
 }
-
-function fillSettingsForm(){
-  document.getElementById('s-token').value = S.profiles.private.gh.token || '';
-  document.getElementById('s-owner').value = S.profiles.private.gh.owner || '';
-  document.getElementById('s-repo').value  = S.profiles.private.gh.repo  || '';
-  document.getElementById('s-branch').value= S.profiles.private.gh.branch|| 'main';
-  document.getElementById('s-claude-work').value  = S.profiles.work.claudeKey || '';
-  document.getElementById('s-token-work').value   = S.profiles.work.gh.token  || '';
-  document.getElementById('s-owner-work').value   = S.profiles.work.gh.owner  || '';
-  document.getElementById('s-repo-work').value    = S.profiles.work.gh.repo   || '';
-  document.getElementById('s-branch-work').value  = S.profiles.work.gh.branch || 'main';
-  document.getElementById('s-tags').value = S.presetTags.join(',');
+function fillForm(){
+  document.getElementById('s-claude-private').value=S.profiles.private.claudeKey||'';
+  document.getElementById('s-token').value  =S.profiles.private.gh.token||'';
+  document.getElementById('s-owner').value  =S.profiles.private.gh.owner||'';
+  document.getElementById('s-repo').value   =S.profiles.private.gh.repo||'';
+  document.getElementById('s-branch').value =S.profiles.private.gh.branch||'main';
+  document.getElementById('s-claude-work').value =S.profiles.work.claudeKey||'';
+  document.getElementById('s-token-work').value  =S.profiles.work.gh.token||'';
+  document.getElementById('s-owner-work').value  =S.profiles.work.gh.owner||'';
+  document.getElementById('s-repo-work').value   =S.profiles.work.gh.repo||'';
+  document.getElementById('s-branch-work').value =S.profiles.work.gh.branch||'main';
+  document.getElementById('s-tags').value=S.presetTags.join(',');
 }
-
 function updateGhStatus(){
-  const g = gh();
-  const dot = document.getElementById('gh-dot');
-  const lbl = document.getElementById('gh-label');
-  if(g.token && g.owner && g.repo){ dot.className='dot ok'; lbl.textContent=`${g.owner}/${g.repo}` }
-  else{ dot.className='dot'; lbl.textContent='GH未設定' }
+  const g=ghConf(),dot=document.getElementById('gh-dot'),lbl=document.getElementById('gh-label');
+  if(g.token&&g.owner&&g.repo){dot.className='dot ok';lbl.textContent=`${g.owner}/${g.repo}`}
+  else{dot.className='dot warn';lbl.textContent='GH未設定'}
 }
-
 function updateClock(){
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  const date = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} (${['日','月','火','水','木','金','土'][now.getDay()]})`;
-  document.getElementById('ts-time').textContent = time;
-  document.getElementById('ts-date').textContent = date;
-  document.getElementById('ts-time2').textContent = time;
-  document.getElementById('ts-date2').textContent = date;
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  const t=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const d=`${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+  ['','2'].forEach(s=>{ document.getElementById(`ts-time${s}`).textContent=t; document.getElementById(`ts-date${s}`).textContent=d });
 }
-
-function fmtTs(iso){
-  const d = new Date(iso);
-  const pad = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') }
-
+function fmtTs(iso){ const d=new Date(iso),pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}` }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') }
 let toastT;
-function toast(msg, type='', dur=2800){
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `show${type?' '+type:''}`;
-  clearTimeout(toastT); toastT = setTimeout(()=>el.className='', dur);
-}
+function toast(msg,type='',dur=2800){ const el=document.getElementById('toast'); el.textContent=msg; el.className=`show${type?' '+type:''}`; clearTimeout(toastT); toastT=setTimeout(()=>el.className='',dur) }
 function showLoader(msg='処理中…'){ document.getElementById('loader-msg').textContent=msg; document.getElementById('loader').classList.add('show') }
 function hideLoader(){ document.getElementById('loader').classList.remove('show') }
 
@@ -1138,23 +993,15 @@ function hideLoader(){ document.getElementById('loader').classList.remove('show'
 // ============================================================
 async function init(){
   await initDB();
-  const saved = await kvGet('profiles');
-  if(saved) Object.assign(S.profiles, saved);
-  const ts = await kvGet('presetTags');
-  if(ts) S.presetTags = ts;
-  const ap = await kvGet('activeProfile');
-  if(ap) S.activeProfile = ap;
-  updateClock(); setInterval(updateClock, 15000);
-  updateGhStatus();
+  const p=await kvGet('profiles'); if(p) Object.assign(S.profiles,p);
+  const ts=await kvGet('presetTags'); if(ts) S.presetTags=ts;
+  const ap=await kvGet('activeProfile'); if(ap) S.activeProfile=ap;
+  updateClock(); setInterval(updateClock,15000);
   renderTagChips('memo'); renderTagChips('photo');
-  // Apply saved profile badge
   switchProfile(S.activeProfile);
 }
 init();
-
-['memo','photo'].forEach(p=>{
-  document.getElementById(`${p}-tag-input`).addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();addTag(p)} });
-});
+['memo','photo'].forEach(p=>{ document.getElementById(`${p}-tag-input`).addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addTag(p)} }) });
 </script>
 </body>
 </html>
