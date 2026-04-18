@@ -37,10 +37,11 @@ header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-c
 .panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,0px)}
 .panel.active{display:block}
 
-.tabbar{flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar{flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--s1)}
 .tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:8px 0}
 .tabbar button.active{color:var(--accent)}
 .tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.safe-area-bottom{flex-shrink:0;height:env(safe-area-inset-bottom,0px);background:var(--s1)}
 
 .field{padding:12px 16px;border-bottom:1px solid var(--border)}
 .field-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
@@ -75,7 +76,7 @@ textarea{line-height:1.65}
 .record-btn svg{width:20px;height:20px;stroke:var(--text);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .record-btn.recording{background:var(--danger);animation:pulse 1.4s ease-in-out infinite}
 .record-btn.recording svg{stroke:#fff}
-.lang-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:var(--sans)}
+.lang-btn{padding:3px 9px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:var(--sans);white-space:nowrap}
 .lang-btn.on{border-color:var(--info);background:rgba(96,165,250,.1);color:var(--info)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
 .record-status{font-family:var(--mono);font-size:11px;color:var(--muted)}
@@ -197,13 +198,6 @@ textarea{line-height:1.65}
         </button>
       </div>
 
-      <!-- Language selector (short mode only) -->
-      <div id="lang-selector" style="display:flex;gap:6px;margin-bottom:10px">
-        <button class="lang-btn on" data-lang="ja-JP" onclick="setLang(this)">日本語</button>
-        <button class="lang-btn" data-lang="en-US" onclick="setLang(this)">English</button>
-        <button class="lang-btn" data-lang="zh-CN" onclick="setLang(this)">中文</button>
-      </div>
-
       <!-- Record controls -->
       <div class="record-btn-wrap">
         <button class="record-btn" id="record-btn" onclick="toggleRecording()">
@@ -214,7 +208,13 @@ textarea{line-height:1.65}
           <div class="record-status" id="rec-status">タップして録音開始</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px" id="rec-timer"></div>
         </div>
-        <button class="btn-sm" onclick="clearVoice()" style="margin-left:auto">
+        <!-- Language selector: visible in short mode only, right side -->
+        <div id="lang-selector" style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="lang-btn on" data-lang="ja-JP" onclick="setLang(this)">日本語</button>
+          <button class="lang-btn" data-lang="en-US" onclick="setLang(this)">English</button>
+          <button class="lang-btn" data-lang="zh-CN" onclick="setLang(this)">中文</button>
+        </div>
+        <button class="btn-sm" onclick="clearVoice()" id="clear-voice-btn">
           <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>クリア
         </button>
       </div>
@@ -479,6 +479,7 @@ textarea{line-height:1.65}
       設定
     </button>
   </nav>
+  <div class="safe-area-bottom"></div>
 </div>
 
 <div id="toast"></div>
