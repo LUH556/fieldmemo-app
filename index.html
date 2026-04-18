@@ -75,6 +75,8 @@ textarea{line-height:1.65}
 .record-btn svg{width:20px;height:20px;stroke:var(--text);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .record-btn.recording{background:var(--danger);animation:pulse 1.4s ease-in-out infinite}
 .record-btn.recording svg{stroke:#fff}
+.lang-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:var(--sans)}
+.lang-btn.on{border-color:var(--info);background:rgba(96,165,250,.1);color:var(--info)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
 .record-status{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .record-status.active{color:var(--danger)}
@@ -184,21 +186,54 @@ textarea{line-height:1.65}
     </div>
     <div class="record-section">
       <div class="field-label">ボイスメモ</div>
+
+      <!-- Mode toggle -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+        <button id="mode-short-btn" onclick="setRecMode('short')" style="flex:1;padding:7px;border:none;background:rgba(96,165,250,.15);color:var(--info);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          短（〜60秒・文字起こし）
+        </button>
+        <button id="mode-long-btn" onclick="setRecMode('long')" style="flex:1;padding:7px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          長（音声保存）
+        </button>
+      </div>
+
+      <!-- Language selector (short mode only) -->
+      <div id="lang-selector" style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="lang-btn on" data-lang="ja-JP" onclick="setLang(this)">日本語</button>
+        <button class="lang-btn" data-lang="en-US" onclick="setLang(this)">English</button>
+        <button class="lang-btn" data-lang="zh-CN" onclick="setLang(this)">中文</button>
+      </div>
+
+      <!-- Record controls -->
       <div class="record-btn-wrap">
         <button class="record-btn" id="record-btn" onclick="toggleRecording()">
           <svg id="rec-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           <svg id="rec-stop" viewBox="0 0 24 24" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
         </button>
-        <div>
+        <div style="flex:1">
           <div class="record-status" id="rec-status">タップして録音開始</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px" id="rec-timer"></div>
         </div>
-        <button class="btn-sm" onclick="clearTranscript()" style="margin-left:auto">
+        <button class="btn-sm" onclick="clearVoice()" style="margin-left:auto">
           <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>クリア
         </button>
       </div>
-      <div class="transcript-box" id="transcript-box">
-        <span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>
+
+      <!-- Short mode: transcript -->
+      <div id="short-result">
+        <div class="transcript-box" id="transcript-box">
+          <span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>
+        </div>
+      </div>
+
+      <!-- Long mode: audio player -->
+      <div id="long-result" style="display:none">
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-height:52px;display:flex;align-items:center;gap:10px">
+          <svg style="width:16px;height:16px;stroke:var(--muted);stroke-width:1.5;fill:none;flex-shrink:0" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span id="long-status" style="font-family:var(--mono);font-size:11px;color:var(--muted);flex:1">音声データなし</span>
+          <audio id="audio-player" controls style="display:none;max-width:180px;height:28px"></audio>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5">端末に音声データを保存します。GitHubには保存されません。<br>文字起こしはWhisper API対応後に実装予定。</div>
       </div>
     </div>
     <div class="field">
@@ -471,12 +506,16 @@ const S = {
   ocrText: '',
   ocrDone: false,
   isRecording: false,
+  recMode: 'short',
+  recLang: 'ja-JP',
   recognition: null,
   mediaRecorder: null,
   recInterval: null,
   recSeconds: 0,
   transcriptFinal: '',
   transcriptInterim: '',
+  audioChunks: [],
+  audioBlob: null,
   allMemos: [],
 };
 
@@ -520,7 +559,8 @@ async function ghWrite(item){
   const g = ghConf();
   if(!g.token||!g.owner||!g.repo) return {ok:false,reason:'unconfigured'};
   const payload = {...item};
-  delete payload.imageData; // never send image to GitHub
+  delete payload.imageData;
+  delete payload.audioData; // never send audio to GitHub
   const path = `memos/${item.id}.json`;
   const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/${path}`;
   const body = {message:`memo: ${item.id}`,content:toB64(JSON.stringify(payload,null,2)),branch:g.branch||'main'};
@@ -727,21 +767,68 @@ async function exportPhotosZip(){
 // ============================================================
 // VOICE
 // ============================================================
+// ── mode / lang UI ──
+function setRecMode(mode){
+  if(S.isRecording) return;
+  S.recMode=mode;
+  const shortBtn=document.getElementById('mode-short-btn');
+  const longBtn=document.getElementById('mode-long-btn');
+  if(mode==='short'){
+    shortBtn.style.background='rgba(96,165,250,.15)'; shortBtn.style.color='var(--info)';
+    longBtn.style.background='transparent'; longBtn.style.color='var(--muted)';
+    document.getElementById('lang-selector').style.display='flex';
+    document.getElementById('short-result').style.display='';
+    document.getElementById('long-result').style.display='none';
+  }else{
+    longBtn.style.background='rgba(167,139,250,.15)'; longBtn.style.color='var(--purple)';
+    shortBtn.style.background='transparent'; shortBtn.style.color='var(--muted)';
+    document.getElementById('lang-selector').style.display='none';
+    document.getElementById('short-result').style.display='none';
+    document.getElementById('long-result').style.display='';
+  }
+}
+function setLang(btn){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  S.recLang=btn.dataset.lang;
+}
+
+// ── recording ──
 const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+const SHORT_LIMIT = 60;
+
 async function toggleRecording(){ S.isRecording ? stopRecording() : await startRecording() }
+
 async function startRecording(){
-  try{ const s=await navigator.mediaDevices.getUserMedia({audio:true}); S.mediaRecorder=new MediaRecorder(s); S.mediaRecorder.start() }
-  catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    S.mediaRecorder=new MediaRecorder(stream);
+    S.audioChunks=[];
+    S.mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) S.audioChunks.push(e.data) };
+    S.mediaRecorder.start(1000);
+  }catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
   S.isRecording=true; S.transcriptFinal=''; S.transcriptInterim=''; S.recSeconds=0;
+  S.audioBlob=null;
   updateTranscriptUI();
+  // timer
   S.recInterval=setInterval(()=>{
     S.recSeconds++;
-    const m=Math.floor(S.recSeconds/60),s=S.recSeconds%60;
-    document.getElementById('rec-timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const m=Math.floor(S.recSeconds/60), s=S.recSeconds%60;
+    const elapsed=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(S.recMode==='short'){
+      const remain=SHORT_LIMIT-S.recSeconds;
+      if(remain<=0){ stopRecording(); toast('60秒に達しました。録音を停止しました','info'); return }
+      const rm=Math.floor(remain/60), rs=remain%60;
+      document.getElementById('rec-timer').textContent=`${elapsed}　残り${String(rm).padStart(2,'0')}:${String(rs).padStart(2,'0')}`;
+    }else{
+      document.getElementById('rec-timer').textContent=elapsed;
+    }
   },1000);
-  if(SR){
+  // short: Web Speech API
+  if(S.recMode==='short' && SR){
     S.recognition=new SR();
-    S.recognition.lang='ja-JP'; S.recognition.continuous=true; S.recognition.interimResults=true;
+    S.recognition.lang=S.recLang;
+    S.recognition.continuous=true; S.recognition.interimResults=true;
     S.recognition.onresult=e=>{
       let interim='';
       for(let i=e.resultIndex;i<e.results.length;i++){
@@ -751,23 +838,50 @@ async function startRecording(){
       S.transcriptInterim=interim; updateTranscriptUI();
     };
     S.recognition.onerror=e=>{ if(e.error!=='aborted') toast(`音声認識エラー: ${e.error}`,'err') };
+    S.recognition.onend=()=>{ if(S.isRecording) try{ S.recognition.start() }catch(_){} };
     try{ S.recognition.start() }catch(_){}
   }
   updateRecUI();
 }
+
 function stopRecording(){
-  S.isRecording=false; clearInterval(S.recInterval); document.getElementById('rec-timer').textContent='';
-  if(S.recognition){ try{S.recognition.stop()}catch(_){} }
-  if(S.mediaRecorder&&S.mediaRecorder.state!=='inactive'){ S.mediaRecorder.stop(); S.mediaRecorder.stream.getTracks().forEach(t=>t.stop()) }
+  S.isRecording=false; clearInterval(S.recInterval);
+  document.getElementById('rec-timer').textContent='';
+  if(S.recognition){ try{S.recognition.stop()}catch(_){} S.recognition.onend=null; }
+  if(S.mediaRecorder&&S.mediaRecorder.state!=='inactive'){
+    S.mediaRecorder.onstop=()=>{
+      if(S.recMode==='long' && S.audioChunks.length>0){
+        S.audioBlob=new Blob(S.audioChunks,{type:'audio/webm'});
+        const url=URL.createObjectURL(S.audioBlob);
+        const player=document.getElementById('audio-player');
+        player.src=url; player.style.display='';
+        const dur=S.recSeconds;
+        const m=Math.floor(dur/60),s=dur%60;
+        document.getElementById('long-status').textContent=`録音完了 ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} （端末に保存）`;
+      }
+    };
+    S.mediaRecorder.stop();
+    S.mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  }
   S.transcriptInterim=''; updateTranscriptUI(); updateRecUI();
 }
+
 function updateRecUI(){
   const btn=document.getElementById('record-btn'),st=document.getElementById('rec-status');
   const mic=document.getElementById('rec-mic'),stop=document.getElementById('rec-stop');
-  if(S.isRecording){ btn.classList.add('recording'); st.textContent='録音中… タップで停止'; st.className='record-status active'; mic.style.display='none'; stop.style.display='' }
-  else{ btn.classList.remove('recording'); st.textContent='タップして録音開始'; st.className='record-status'; mic.style.display=''; stop.style.display='none' }
+  if(S.isRecording){
+    btn.classList.add('recording'); st.className='record-status active';
+    st.textContent= S.recMode==='short' ? '録音中（文字起こし中）… タップで停止' : '録音中… タップで停止';
+    mic.style.display='none'; stop.style.display='';
+  }else{
+    btn.classList.remove('recording'); st.className='record-status';
+    st.textContent='タップして録音開始';
+    mic.style.display=''; stop.style.display='none';
+  }
 }
+
 function updateTranscriptUI(){
+  if(S.recMode!=='short') return;
   const box=document.getElementById('transcript-box');
   if(S.transcriptFinal||S.transcriptInterim){
     box.innerHTML=esc(S.transcriptFinal);
@@ -776,7 +890,14 @@ function updateTranscriptUI(){
     box.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>';
   }
 }
-function clearTranscript(){ S.transcriptFinal=''; S.transcriptInterim=''; updateTranscriptUI() }
+
+function clearVoice(){
+  S.transcriptFinal=''; S.transcriptInterim=''; S.audioBlob=null; S.audioChunks=[];
+  updateTranscriptUI();
+  const player=document.getElementById('audio-player');
+  player.src=''; player.style.display='none';
+  document.getElementById('long-status').textContent='音声データなし';
+}
 
 // ============================================================
 // SAVE
@@ -790,17 +911,29 @@ function fmtId(){ const now=new Date(),pad=n=>String(n).padStart(2,'0'); return 
 async function saveMemo(){
   const text=document.getElementById('memo-text').value.trim();
   const voice=S.transcriptFinal.trim();
-  if(!text&&!voice){ toast('テキストまたは録音が必要です','err'); return }
+  const hasAudio=S.recMode==='long' && S.audioBlob;
+  if(!text&&!voice&&!hasAudio){ toast('テキスト・録音いずれかが必要です','err'); return }
   const btn=document.getElementById('memo-save-btn');
   btn.disabled=true;
-  const item={id:genId(),type:'memo',timestamp:new Date().toISOString(),text,voiceTranscript:voice,tags:[...S.memoTags],profile:S.activeProfile,ghSynced:false};
+  // Convert audioBlob to base64 for IndexedDB storage
+  let audioData=null;
+  if(hasAudio){
+    audioData=await new Promise(res=>{
+      const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(S.audioBlob);
+    });
+  }
+  const item={id:genId(),type:'memo',timestamp:new Date().toISOString(),text,voiceTranscript:voice,
+    audioData, recMode:S.recMode, recLang:S.recLang,
+    tags:[...S.memoTags],profile:S.activeProfile,ghSynced:false};
   await dbPut(item);
+  // GitHub: strip audioData (same pattern as photo)
   let ghR={ok:false,reason:'unconfigured'};
   const g=ghConf();
   if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
-  document.getElementById('memo-text').value=''; clearTranscript(); S.memoTags.clear(); renderTagChips('memo');
+  document.getElementById('memo-text').value=''; clearVoice(); S.memoTags.clear(); renderTagChips('memo');
   btn.disabled=false;
-  ghR.reason==='unconfigured'?toast('ローカルに保存しました'):ghR.ok?toast('保存 + GitHub同期完了','ok'):toast(`保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+  const saved=hasAudio?'音声データ付きで':'';
+  ghR.reason==='unconfigured'?toast(`${saved}ローカルに保存しました`):ghR.ok?toast(`${saved}保存 + GitHub同期完了`,'ok'):toast(`${saved}保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
 }
 
 async function savePhoto(){
@@ -841,8 +974,12 @@ function renderHistory(items){
     const tagsHtml=(item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
     let bodyHtml='';
     if(item.type==='memo'){
-      const txt=(item.text||'')+(item.voiceTranscript?`\n[音声] ${item.voiceTranscript}`:'');
-      bodyHtml=`<div class="card-body${isExp?'':' clamp'}">${esc(txt)}</div>`;
+      const txt=(item.text||'')+(item.voiceTranscript?`\n[文字起こし] ${item.voiceTranscript}`:'');
+      bodyHtml=`<div class="card-body${isExp?'':' clamp'}">${esc(txt)||'（テキストなし）'}</div>`;
+      if(isExp && item.audioData){
+        bodyHtml+=`<audio controls src="${item.audioData}" style="width:100%;margin-top:8px;height:32px"></audio>`;
+        bodyHtml+=`<div class="card-note">音声データあり（端末内のみ）</div>`;
+      }
     }else{
       bodyHtml=item.ocrText?`<div class="card-body${isExp?'':' clamp'}">${esc(item.ocrText)}</div>`:'';
       if(isExp){
