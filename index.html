@@ -56,6 +56,10 @@ textarea{line-height:1.65}
 .tags-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
 .tag-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
 .tag-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
+.cat-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.cat-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
+.cat-chip.on{border-color:var(--info);background:rgba(96,165,250,.12);color:var(--info)}
+.card-cat{padding:2px 7px;border-radius:10px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.18);color:var(--info);font-size:11px}
 .tag-input-row{display:flex;gap:8px;margin-top:4px}
 .tag-input-row input{flex:1;font-size:13px}
 
@@ -237,6 +241,10 @@ textarea{line-height:1.65}
       </div>
     </div>
     <div class="field">
+      <div class="field-label">観察カテゴリ</div>
+      <div class="cat-wrap" id="memo-cats"></div>
+    </div>
+    <div class="field">
       <div class="field-label">タグ</div>
       <div class="tags-wrap" id="memo-tags"></div>
       <div class="tag-input-row">
@@ -310,6 +318,10 @@ textarea{line-height:1.65}
     <div class="field">
       <div class="field-label">メモ（任意）</div>
       <textarea id="photo-note" placeholder="補足メモ…" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">観察カテゴリ</div>
+      <div class="cat-wrap" id="photo-cats"></div>
     </div>
     <div class="field">
       <div class="field-label">タグ</div>
@@ -425,12 +437,17 @@ textarea{line-height:1.65}
     <div class="sg">
       <div class="sg-title">タグプリセット（共通）</div>
       <div class="sr">
-        <textarea id="s-tags" rows="3" placeholder="軸A,軸B,軸C,要フォロー,競合,パートナー" style="min-height:64px;font-size:13px"></textarea>
-        <div class="sr-note">カンマ区切り。変更後「タグ保存」を押してください。</div>
+        <textarea id="s-tags" rows="2" placeholder="要フォロー,先進的,標準的,回帰的" style="min-height:48px;font-size:13px"></textarea>
+        <div class="sr-note">カンマ区切り。変更後「保存」を押してください。</div>
+      </div>
+      <div class="sr" style="margin-top:10px">
+        <div class="sr-label">観察カテゴリ</div>
+        <textarea id="s-cats" rows="2" placeholder="ブース外観,電装品,ドアアクセス,電源ON,ADAS,バッテリー,展示パネル,UI/UX" style="min-height:48px;font-size:13px"></textarea>
+        <div class="sr-note">カンマ区切り。タグとは別レイヤーで管理されます。</div>
       </div>
       <button class="btn-sm" onclick="saveTags()" style="margin-top:4px">
         <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-        タグ保存
+        タグ・カテゴリ保存
       </button>
     </div>
 
@@ -493,10 +510,14 @@ const S = {
   panel: 'memo',
   activeProfile: 'private',
   filterTag: null,
+  filterCategory: null,
   expandedId: null,
   memoTags: new Set(),
   photoTags: new Set(),
-  presetTags: ['軸A','軸B','軸C','要フォロー','競合','パートナー'],
+  presetTags: ['要フォロー','先進的','標準的','回帰的'],
+  presetCategories: ['ブース外観','電装品','ドアアクセス','電源ON','ADAS','バッテリー','展示パネル','UI/UX'],
+  memoCategory: null,
+  photoCategory: null,
   profiles: {
     private: { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
     work:    { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
@@ -752,8 +773,9 @@ async function exportPhotosZip(){
     // Also add index.md with OCR texts
     const index = photos.map(item=>{
       const ts = fmtTs(item.timestamp);
+      const cat = item.category ? `【${item.category}】` : '';
       const tags = (item.tags||[]).join(', ');
-      return `## ${ts} [${tags}]\n\n${item.ocrText||'（OCRなし）'}\n${item.note?`\nメモ: ${item.note}`:''}\n`;
+      return `## ${ts} ${cat} [${tags}]\n\n${item.ocrText||'（OCRなし）'}\n${item.note?`\nメモ: ${item.note}`:''}\n`;
     }).join('\n---\n\n');
     zip.file('ocr_index.md',`# FIELDMEMO 写真OCRインデックス\n生成: ${new Date().toLocaleString('ja-JP')}\n総枚数: ${photos.length}枚\n\n---\n\n${index}`);
     const blob = await zip.generateAsync({type:'blob'});
@@ -928,13 +950,14 @@ async function saveMemo(){
   }
   const item={id:genId(),type:'memo',timestamp:new Date().toISOString(),text,voiceTranscript:voice,
     audioData, recMode:S.recMode, recLang:S.recLang,
+    category:S.memoCategory||null,
     tags:[...S.memoTags],profile:S.activeProfile,ghSynced:false};
   await dbPut(item);
   // GitHub: strip audioData (same pattern as photo)
   let ghR={ok:false,reason:'unconfigured'};
   const g=ghConf();
   if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
-  document.getElementById('memo-text').value=''; clearVoice(); S.memoTags.clear(); renderTagChips('memo');
+  document.getElementById('memo-text').value=''; clearVoice(); S.memoTags.clear(); S.memoCategory=null; renderTagChips('memo'); renderCatChips('memo');
   btn.disabled=false;
   const saved=hasAudio?'音声データ付きで':'';
   ghR.reason==='unconfigured'?toast(`${saved}ローカルに保存しました`):ghR.ok?toast(`${saved}保存 + GitHub同期完了`,'ok'):toast(`${saved}保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
@@ -945,12 +968,12 @@ async function savePhoto(){
   const btn=document.getElementById('photo-save-btn'); btn.disabled=true;
   const note=document.getElementById('photo-note').value.trim();
   const id=genId(); S.currentPhotoId=id;
-  const item={id,type:'photo',timestamp:new Date().toISOString(),imageData:S.photoData,ocrText:S.ocrText,note,tags:[...S.photoTags],profile:S.activeProfile,ghSynced:false};
+  const item={id,type:'photo',timestamp:new Date().toISOString(),imageData:S.photoData,ocrText:S.ocrText,note,category:S.photoCategory||null,tags:[...S.photoTags],profile:S.activeProfile,ghSynced:false};
   await dbPut(item);
   let ghR={ok:false,reason:'unconfigured'};
   const g=ghConf();
   if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
-  clearPhoto(); document.getElementById('photo-note').value=''; S.photoTags.clear(); renderTagChips('photo');
+  clearPhoto(); document.getElementById('photo-note').value=''; S.photoTags.clear(); S.photoCategory=null; renderTagChips('photo'); renderCatChips('photo');
   btn.disabled=false; btn.textContent='OCR完了後に保存できます';
   ghR.reason==='unconfigured'?toast('端末に保存しました（画像あり）'):ghR.ok?toast('保存完了。GitHubにはテキストのみ送信','ok'):toast(`端末保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
 }
@@ -961,20 +984,36 @@ async function savePhoto(){
 async function loadHistory(){ const all=await dbAll(); S.allMemos=all; renderHistory(all) }
 
 function renderHistory(items){
-  const filtered=S.filterTag?items.filter(m=>(m.tags||[]).includes(S.filterTag)):items;
+  let filtered=items;
+  if(S.filterCategory) filtered=filtered.filter(m=>m.category===S.filterCategory);
+  if(S.filterTag) filtered=filtered.filter(m=>(m.tags||[]).includes(S.filterTag));
   document.getElementById('tl-count').textContent=`${filtered.length} 件`;
-  const allTags=[...new Set(items.flatMap(m=>m.tags||[]))];
+
+  // Category filter row
+  const allCats=[...new Set(items.map(m=>m.category).filter(Boolean))];
   const fb=document.getElementById('filter-bar'); fb.innerHTML='';
-  [{label:'すべて',value:null},...allTags.map(t=>({label:t,value:t}))].forEach(({label,value})=>{
+  if(allCats.length){
+    [{label:'すべて',value:null},...allCats.map(c=>({label:c,value:c}))].forEach(({label,value})=>{
+      const b=document.createElement('button'); b.className='filter-chip'+(S.filterCategory===value?' on':'');
+      b.textContent=label; b.onclick=()=>{S.filterCategory=value;renderHistory(items)}; fb.appendChild(b);
+    });
+    // separator
+    const sep=document.createElement('span'); sep.style.cssText='width:1px;background:var(--border);flex-shrink:0;align-self:stretch;margin:4px 2px'; fb.appendChild(sep);
+  }
+  // Tag filters
+  const allTags=[...new Set(items.flatMap(m=>m.tags||[]))];
+  [{label:allCats.length?'全タグ':'すべて',value:null},...allTags.map(t=>({label:t,value:t}))].forEach(({label,value})=>{
     const b=document.createElement('button'); b.className='filter-chip'+(S.filterTag===value?' on':'');
     b.textContent=label; b.onclick=()=>{S.filterTag=value;renderHistory(items)}; fb.appendChild(b);
   });
+
   const list=document.getElementById('timeline-list');
   if(!filtered.length){ list.innerHTML=`<div class="empty-state"><div class="empty-icon">[ ]</div>記録がありません</div>`; return }
   list.innerHTML='';
   filtered.forEach(item=>{
     const card=document.createElement('div'); card.className='memo-card';
     const isExp=S.expandedId===item.id;
+    const catHtml=item.category?`<span class="card-cat">${esc(item.category)}</span>`:'';
     const tagsHtml=(item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
     let bodyHtml='';
     if(item.type==='memo'){
@@ -988,7 +1027,6 @@ function renderHistory(items){
       bodyHtml=item.ocrText?`<div class="card-body${isExp?'':' clamp'}">${esc(item.ocrText)}</div>`:'';
       if(isExp){
         if(item.imageData) bodyHtml+=`<img class="card-thumb" src="${item.imageData}" alt="">`;
-        // Download button (only if imageData exists in this device)
         if(item.imageData) bodyHtml+=`<div class="card-dl-row"><button class="btn-sm success" onclick="event.stopPropagation();downloadPhoto('${item.imageData}','${item.id}.jpg')"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 写真をダウンロード</button></div>`;
         if(!item.imageData) bodyHtml+=`<div class="card-note">※ 写真は別デバイスで取得したため、この端末にはありません</div>`;
       }
@@ -996,6 +1034,7 @@ function renderHistory(items){
     card.innerHTML=`
       <div class="card-head">
         <span class="card-ts">${fmtTs(item.timestamp)}</span>
+        ${catHtml}
         <span class="card-type ${item.type==='photo'?'photo':'memo'}">${item.type==='photo'?'写真':'メモ'}</span>
         ${item.ghSynced?'<span class="card-sync ok">✓ GH</span>':'<span class="card-sync">● local</span>'}
       </div>
@@ -1018,6 +1057,26 @@ function renderTagChips(panel){
   sel.forEach(tag=>{ if(!S.presetTags.includes(tag)){const b=document.createElement('button');b.className='tag-chip on';b.textContent=tag;b.onclick=()=>{sel.delete(tag);renderTagChips(panel)};wrap.appendChild(b)} });
 }
 function addTag(panel){ const inp=document.getElementById(`${panel}-tag-input`),val=inp.value.trim(); if(!val) return; (panel==='memo'?S.memoTags:S.photoTags).add(val); inp.value=''; renderTagChips(panel) }
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+function renderCatChips(panel){
+  const wrap=document.getElementById(`${panel}-cats`); if(!wrap) return;
+  const cur=panel==='memo'?S.memoCategory:S.photoCategory;
+  wrap.innerHTML='';
+  S.presetCategories.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='cat-chip'+(cur===cat?' on':'');
+    b.textContent=cat;
+    b.onclick=()=>{
+      if(panel==='memo') S.memoCategory=S.memoCategory===cat?null:cat;
+      else S.photoCategory=S.photoCategory===cat?null:cat;
+      renderCatChips(panel);
+    };
+    wrap.appendChild(b);
+  });
+}
 
 // ============================================================
 // SETTINGS / PROFILE
@@ -1063,17 +1122,21 @@ async function saveSettings(){
 
 async function saveTags(){
   S.presetTags=document.getElementById('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  S.presetCategories=document.getElementById('s-cats').value.split(',').map(t=>t.trim()).filter(Boolean);
   await kvSet('presetTags',S.presetTags);
+  await kvSet('presetCategories',S.presetCategories);
   renderTagChips('memo'); renderTagChips('photo');
-  toast('タグを更新しました','ok');
+  renderCatChips('memo'); renderCatChips('photo');
+  toast('タグ・カテゴリを更新しました','ok');
 }
 
 async function exportMarkdown(){
   const all=await dbAll(); if(!all.length){toast('記録がありません','err');return}
   const lines=all.map(item=>{
     const ts=fmtTs(item.timestamp),tags=(item.tags||[]).length?`[${item.tags.join(', ')}] `:'';
-    if(item.type==='photo') return `## 📷 ${ts} ${tags}\n\n${item.ocrText?`**OCR:** ${item.ocrText}`:''}${item.note?`\n**メモ:** ${item.note}`:''}`;
-    return `## 📝 ${ts} ${tags}\n\n${[item.text,item.voiceTranscript&&`[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n')}`;
+    const cat=item.category?`**${item.category}** `:'';
+    if(item.type==='photo') return `## 📷 ${ts} ${cat}${tags}\n\n${item.ocrText?`**OCR:** ${item.ocrText}`:''}${item.note?`\n**メモ:** ${item.note}`:''}`;
+    return `## 📝 ${ts} ${cat}${tags}\n\n${[item.text,item.voiceTranscript&&`[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n')}`;
   });
   const md=`# FIELDMEMO Export\n生成: ${new Date().toLocaleString('ja-JP')}\n総件数: ${all.length}件\n\n---\n\n${lines.join('\n\n---\n\n')}`;
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
@@ -1110,6 +1173,7 @@ function fillForm(){
   document.getElementById('s-repo-work').value   =S.profiles.work.gh.repo||'';
   document.getElementById('s-branch-work').value =S.profiles.work.gh.branch||'main';
   document.getElementById('s-tags').value=S.presetTags.join(',');
+  document.getElementById('s-cats').value=S.presetCategories.join(',');
 }
 function updateGhStatus(){
   const g=ghConf(),dot=document.getElementById('gh-dot'),lbl=document.getElementById('gh-label');
@@ -1136,9 +1200,11 @@ async function init(){
   await initDB();
   const p=await kvGet('profiles'); if(p) Object.assign(S.profiles,p);
   const ts=await kvGet('presetTags'); if(ts) S.presetTags=ts;
+  const cs=await kvGet('presetCategories'); if(cs) S.presetCategories=cs;
   const ap=await kvGet('activeProfile'); if(ap) S.activeProfile=ap;
   updateClock(); setInterval(updateClock,15000);
   renderTagChips('memo'); renderTagChips('photo');
+  renderCatChips('memo'); renderCatChips('photo');
   switchProfile(S.activeProfile);
 }
 init();
