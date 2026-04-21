@@ -2,541 +2,1399 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026北京モーターショー 回遊ルートガイド</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FIELDMEMO</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/500.css">
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-:root {
-  --bg: #0c0c0f;
-  --surface: #16161a;
-  --surface-2: #1e1e24;
-  --surface-3: #26262e;
-  --text: #e8e6e1;
-  --text-muted: #9a9890;
-  --text-dim: #5e5d58;
-  --accent-south: #e85d24;
-  --accent-south-soft: rgba(232,93,36,0.12);
-  --accent-north: #2d8cf0;
-  --accent-north-soft: rgba(45,140,240,0.12);
-  --green: #3db88c;
-  --green-soft: rgba(61,184,140,0.12);
-  --amber: #d4a832;
-  --amber-soft: rgba(212,168,50,0.15);
-  --purple: #8b6cc1;
-  --purple-soft: rgba(139,108,193,0.12);
-  --border: rgba(255,255,255,0.06);
-  --radius: 10px;
-  --font: 'Noto Sans JP','DM Sans',sans-serif;
-  --font-mono: 'DM Sans',monospace;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--s1:#141414;--s2:#1c1c1c;--s3:#242424;
+  --border:#2c2c2c;--accent:#f59e0b;--accent2:#d97706;
+  --text:#e5e5e5;--muted:#6b7280;--faint:#252525;
+  --danger:#ef4444;--ok:#22c55e;--info:#60a5fa;--purple:#a78bfa;
+  --mono:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
+  --hdr:50px;--nav:58px;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased;}
-.wrap{max-width:980px;margin:0 auto;padding:40px 20px 80px;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto}
 
-/* Header */
-.hdr{text-align:center;margin-bottom:40px;}
-.hdr-badge{display:inline-block;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;margin-bottom:14px;}
-.hdr h1{font-family:var(--font-mono);font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px;}
-.hdr h1 span{color:var(--accent-south);}
-.hdr p{color:var(--text-muted);font-size:13px;max-width:540px;margin:0 auto;}
+header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--s1)}
+.logo{font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.profile-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.profile-badge.private{border-color:rgba(96,165,250,.4);color:var(--info)}
+.profile-badge.work{border-color:rgba(167,139,250,.4);color:var(--purple)}
+.hdr-status{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.warn{background:var(--accent)}
 
-/* Section titles */
-.sec-title{font-size:17px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,0px)}
+.panel.active{display:block}
 
-/* ===== VENUE MAP ===== */
-.map-section{margin-bottom:48px;}
-.map-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 16px;overflow-x:auto;}
-.map-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
-.map-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);}
-.map-legend-item .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.tabbar{flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border);background:var(--s1)}
+.tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:8px 0}
+.tabbar button.active{color:var(--accent)}
+.tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.safe-area-bottom{flex-shrink:0;height:env(safe-area-inset-bottom,0px);background:var(--s1)}
 
-/* ===== ACCESS ===== */
-.access-bar{display:flex;gap:10px;margin-bottom:40px;flex-wrap:wrap;}
-.access-card{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
-.access-card .lbl{font-size:10px;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
-.access-card .val{font-size:13px;font-weight:500;}
-.access-card .val em{font-style:normal;color:var(--text-muted);font-weight:400;}
+.field{padding:12px 16px;border-bottom:1px solid var(--border)}
+.field-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+textarea,input[type=text],input[type=password]{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;padding:10px 12px;border-radius:6px;-webkit-appearance:none;outline:none;transition:border-color .15s;resize:none}
+textarea:focus,input:focus{border-color:var(--accent)}
+textarea{line-height:1.65}
 
-/* ===== TAB ===== */
-.tab-group{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:28px;border:1px solid var(--border);}
-.tab-btn{flex:1;border:none;background:transparent;color:var(--text-muted);font-family:var(--font);font-size:13px;font-weight:500;padding:10px 14px;border-radius:9px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:6px;}
-.tab-btn:hover{color:var(--text);background:var(--surface-2);}
-.tab-btn.act-s{background:var(--accent-south);color:#fff;}
-.tab-btn.act-n{background:var(--accent-north);color:#fff;}
-.tab-content{display:none;}.tab-content.active{display:block;}
+.ts-block{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:baseline;gap:12px}
+.ts-time{font-family:var(--mono);font-size:24px;color:var(--text);letter-spacing:.03em}
+.ts-date{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-/* Route intro */
-.route-intro{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;}
-.route-intro.south{border-left:3px solid var(--accent-south);}
-.route-intro.north{border-left:3px solid var(--accent-north);}
-.route-intro h3{font-size:14px;font-weight:700;margin-bottom:4px;}
-.route-intro p{color:var(--text-muted);font-size:12px;}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.tag-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
+.tag-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
+.cat-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.cat-chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;font-family:var(--sans)}
+.cat-chip.on{border-color:var(--info);background:rgba(96,165,250,.12);color:var(--info)}
+.card-cat{padding:2px 7px;border-radius:10px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.18);color:var(--info);font-size:11px}
+.tag-input-row{display:flex;gap:8px;margin-top:4px}
+.tag-input-row input{flex:1;font-size:13px}
 
-/* Legend (tech tags) */
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.btn-primary{display:block;width:calc(100% - 32px);margin:14px 16px;padding:14px;border:none;border-radius:8px;background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.06em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s}
+.btn-primary:active{transform:scale(.98);background:var(--accent2)}
+.btn-primary:disabled{background:var(--faint);color:var(--muted);cursor:not-allowed;transform:none}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap}
+.btn-sm:active{border-color:var(--accent);color:var(--accent)}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm svg{width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.btn-sm.danger{border-color:rgba(239,68,68,.4);color:var(--danger)}
+.btn-sm.success{border-color:rgba(34,197,94,.4);color:var(--ok)}
+
+/* Voice */
+.record-section{padding:12px 16px;border-bottom:1px solid var(--border)}
+.record-btn-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.record-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .2s;flex-shrink:0}
+.record-btn svg{width:20px;height:20px;stroke:var(--text);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.record-btn.recording{background:var(--danger);animation:pulse 1.4s ease-in-out infinite}
+.record-btn.recording svg{stroke:#fff}
+.lang-btn{padding:3px 9px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:var(--sans);white-space:nowrap}
+.lang-btn.on{border-color:var(--info);background:rgba(96,165,250,.1);color:var(--info)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+.record-status{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.record-status.active{color:var(--danger)}
+.transcript-box{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-height:60px;font-size:14px;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-all}
+
+/* Photo */
+.capture-row{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.capture-row label{flex:1}
+.capture-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;padding:18px 10px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--mono);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.capture-btn:active,.capture-btn:hover{border-color:var(--accent);color:var(--accent)}
+.capture-btn svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+.photo-preview-wrap{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.photo-preview-wrap.visible{display:block}
+.photo-preview{width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:var(--s2);display:block}
+.photo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+
+/* OCR */
+.ocr-progress-wrap{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.ocr-progress-wrap.visible{display:block}
+.ocr-bar-bg{background:var(--s2);border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px}
+.ocr-bar{background:var(--accent);height:4px;border-radius:4px;width:0%;transition:width .4s}
+.ocr-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ocr-result{padding:12px 16px;border-bottom:1px solid var(--border);display:none}
+.ocr-result.visible{display:block}
+.ocr-section-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.ocr-text{font-size:13px;line-height:1.65;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;word-break:break-all;white-space:pre-wrap;max-height:130px;overflow-y:auto}
+
+/* API key warning banner */
+.api-warn{margin:12px 16px;padding:10px 12px;border-radius:6px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.07);font-size:12px;color:var(--accent);line-height:1.6;display:none}
+.api-warn.visible{display:block}
+.api-warn a{color:var(--accent);text-decoration:underline;cursor:pointer}
 
 /* Timeline */
-.timeline{position:relative;padding-left:34px;}
-.timeline::before{content:'';position:absolute;left:12px;top:8px;bottom:8px;width:1px;background:var(--border);}
-.tl-step{position:relative;margin-bottom:6px;}
-.tl-step:last-child{margin-bottom:0;}
-.step-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;z-index:1;}
-.step-dot.s{background:var(--accent-south);}
-.step-dot.n{background:var(--accent-north);}
-.step-dot.xfer{background:var(--surface-3);border:2px dashed var(--text-dim);color:var(--text-muted);font-size:9px;}
-.step-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s;}
-.step-card:hover{border-color:rgba(255,255,255,.1);}
-.step-hdr{padding:12px 16px 10px;display:flex;align-items:baseline;gap:8px;cursor:pointer;}
-.step-hall{font-family:var(--font-mono);font-size:17px;font-weight:700;white-space:nowrap;}
-.step-brands{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.step-toggle{margin-left:auto;color:var(--text-dim);font-size:14px;transition:transform .25s;flex-shrink:0;}
-.step-card.open .step-toggle{transform:rotate(180deg);}
-.step-details{display:none;border-top:1px solid var(--border);padding:12px 16px 14px;}
-.step-card.open .step-details{display:block;}
-.brand-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;}
-.brand-row+.brand-row{border-top:1px solid var(--border);}
-.brand-name{font-weight:500;font-size:12px;min-width:110px;flex-shrink:0;}
-.brand-booth{font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--text-dim);background:var(--surface-2);border-radius:3px;padding:1px 5px;flex-shrink:0;}
-.brand-note{font-size:11px;color:var(--text-muted);}
-.tech-tag{display:inline-block;font-size:9px;font-weight:500;letter-spacing:.04em;padding:1px 6px;border-radius:3px;margin-left:4px;vertical-align:middle;}
-.tech-tag.cockpit{background:var(--purple-soft);color:var(--purple);}
-.tech-tag.door{background:var(--green-soft);color:var(--green);}
-.tech-tag.ev{background:var(--accent-south-soft);color:var(--accent-south);}
-.tech-tag.adas{background:var(--accent-north-soft);color:var(--accent-north);}
-.xfer-card{background:var(--surface-2);border:1px dashed rgba(255,255,255,.08);border-radius:var(--radius);padding:10px 16px;text-align:center;color:var(--text-dim);font-size:11px;}
-.xfer-card strong{color:var(--text-muted);font-weight:500;}
+.tl-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
+.tl-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.filter-bar{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:var(--sans);transition:all .15s}
+.filter-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
+.memo-card{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s}
+.memo-card:active{background:var(--s2)}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.card-ts{font-family:var(--mono);font-size:11px;color:var(--accent);flex:1}
+.card-type{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px}
+.card-type.memo{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:var(--info)}
+.card-type.photo{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:var(--purple)}
+.card-sync{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.card-sync.ok{color:var(--ok)}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.card-tag{padding:2px 7px;border-radius:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);color:var(--accent);font-size:11px}
+.card-body{font-size:14px;line-height:1.6;color:var(--text);word-break:break-all}
+.card-body.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-thumb{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px}
+.card-dl-row{display:flex;gap:8px;margin-top:8px}
+.card-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
+.empty-state{padding:56px 24px;text-align:center;color:var(--muted);font-size:14px;line-height:2}
+.empty-icon{font-family:var(--mono);font-size:26px;color:var(--faint);margin-bottom:10px}
 
-/* Building label in timeline */
-.bldg-label{display:flex;align-items:center;gap:8px;margin:16px 0 10px;font-size:11px;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;}
-.bldg-label::after{content:'';flex:1;height:1px;background:var(--border);}
-.bldg-label .bldg-dot{width:8px;height:8px;border-radius:2px;}
+/* Settings */
+.sg{padding:14px 16px;border-bottom:1px solid var(--border)}
+.sg-title{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.sr{margin-bottom:12px}
+.sr-label{font-size:13px;color:var(--muted);margin-bottom:5px}
+.sr-note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;opacity:.65}
+.profile-tabs{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.ptab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.ptab.active.private{background:rgba(96,165,250,.15);color:var(--info)}
+.ptab.active.work{background:rgba(167,139,250,.15);color:var(--purple)}
+.settings-actions{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
 
-/* Summary */
-.summary{margin-top:44px;}
-.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
-.sc .sc-l{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
-.sc .sc-v{font-size:18px;font-family:var(--font-mono);font-weight:700;}
-.sc .sc-n{font-size:11px;color:var(--text-muted);margin-top:2px;}
+/* Toast / Loader */
+#toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:var(--mono);padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:200;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:var(--ok);color:var(--ok)}
+#toast.err{border-color:var(--danger);color:var(--danger)}
+#toast.info{border-color:var(--info);color:var(--info)}
+#loader{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:300;flex-direction:column;gap:12px}
+#loader.show{display:flex}
+.loader-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.loader-msg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;max-width:260px;line-height:1.5}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* MAP panel */
+.map-inner{padding:0}
+.map-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--s1);position:sticky;top:0;z-index:10}
+.map-tab{flex:1;border:none;background:transparent;color:var(--muted);font-family:var(--sans);font-size:11px;padding:10px 4px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;border-bottom:2px solid transparent}
+.map-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.map-view{display:none;padding:12px 14px}
+.map-view.active{display:block}
+.rt-intro{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:14px}
+.rt-list{position:relative;padding-left:30px}
+.rt-list::before{content:'';position:absolute;left:11px;top:8px;bottom:8px;width:1px;background:var(--border)}
+.rt-step{position:relative;margin-bottom:6px}
+.rt-dot{position:absolute;left:-30px;top:10px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;z-index:1}
+.rt-dot.s{background:var(--accent)}
+.rt-dot.n{background:var(--info)}
+.rt-dot.xf{background:var(--s3);border:2px dashed var(--muted);color:var(--muted);font-size:8px}
+.rt-card{background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color .15s}
+.rt-hdr{padding:8px 10px;display:flex;align-items:baseline;gap:6px;cursor:pointer;font-size:12px}
+.rt-hdr b{font-family:var(--mono);font-size:14px;flex-shrink:0}
+.rt-hdr span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt-arr{margin-left:auto;color:var(--muted);font-size:12px;transition:transform .2s;flex-shrink:0}
+.rt-card.open .rt-arr{transform:rotate(180deg)}
+.rt-det{display:none;border-top:1px solid var(--border);padding:6px 10px 8px}
+.rt-card.open .rt-det{display:block}
+.rt-row{display:flex;align-items:flex-start;gap:6px;padding:4px 0;flex-wrap:wrap}
+.rt-row+.rt-row{border-top:1px solid var(--border)}
+.rt-bn{font-weight:500;font-size:11px;min-width:90px;flex-shrink:0}
+.rt-bb{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--muted);background:var(--s3);border-radius:3px;padding:1px 5px;flex-shrink:0}
+.rt-nt{font-size:10px;color:var(--muted)}
+.rt-tag{display:inline-block;font-size:8px;font-weight:500;letter-spacing:.04em;padding:1px 5px;border-radius:3px;margin-left:3px;vertical-align:middle}
+.rt-tag.ck{background:rgba(167,139,250,.12);color:var(--purple)}
+.rt-tag.dr{background:rgba(34,197,94,.12);color:var(--ok)}
+.rt-tag.ev{background:rgba(245,158,11,.1);color:var(--accent)}
+.rt-tag.ad{background:rgba(96,165,250,.12);color:var(--info)}
+.rt-xfer{background:var(--s3);border:1px dashed var(--border);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--muted);text-align:center}
 
-@media(max-width:640px){
-  .wrap{padding:24px 14px 60px;}
-  .hdr h1{font-size:20px;}
-  .access-bar{flex-direction:column;}
-  .summary-grid{grid-template-columns:1fr;}
-  .brand-name{min-width:80px;}
-  .step-brands{display:none;}
-}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="app">
+  <header>
+    <span class="logo">FIELDMEMO</span>
+    <div class="hdr-right">
+      <span class="profile-badge private" id="profile-badge" onclick="showPanel('settings')">PRIVATE</span>
+      <div class="hdr-status">
+        <span class="dot" id="gh-dot"></span><span id="gh-label">GH未設定</span>
+      </div>
+    </div>
+  </header>
 
-<div class="hdr">
-  <div class="hdr-badge">Auto China 2026 · 北京モーターショー</div>
-  <h1>会場ガイド＆<span>回遊ルート</span></h1>
-  <p>2会場17ホールのレイアウトと、重点20メーカーを効率的に巡る2つのルート</p>
-</div>
+  <!-- ══ MEMO ══ -->
+  <div id="panel-memo" class="panel active">
+    <div class="ts-block">
+      <span class="ts-time" id="ts-time">--:--</span>
+      <span class="ts-date" id="ts-date"></span>
+    </div>
+    <div class="field">
+      <div class="field-label">テキストメモ</div>
+      <textarea id="memo-text" placeholder="気づき・観察・質問メモ…" rows="4"></textarea>
+    </div>
+    <div class="record-section">
+      <div class="field-label">ボイスメモ</div>
 
-<!-- ========== VENUE MAP ========== -->
-<div class="map-section">
-  <h2 class="sec-title">会場レイアウト</h2>
+      <!-- Mode toggle -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+        <button id="mode-short-btn" onclick="setRecMode('short')" style="flex:1;padding:7px;border:none;background:rgba(96,165,250,.15);color:var(--info);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          短（〜60秒・文字起こし）
+        </button>
+        <button id="mode-long-btn" onclick="setRecMode('long')" style="flex:1;padding:7px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          長（音声保存）
+        </button>
+      </div>
 
-  <div class="map-container">
-    <svg width="100%" viewBox="0 0 680 920" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-      <defs>
-        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </marker>
-      </defs>
+      <!-- Record controls -->
+      <div class="record-btn-wrap">
+        <button class="record-btn" id="record-btn" onclick="toggleRecording()">
+          <svg id="rec-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <svg id="rec-stop" viewBox="0 0 24 24" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+        <div style="flex:1">
+          <div class="record-status" id="rec-status">タップして録音開始</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="rec-timer"></div>
+        </div>
+        <!-- Language selector: visible in short mode only, right side -->
+        <div id="lang-selector" style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="lang-btn on" data-lang="ja-JP" onclick="setLang(this)">日本語</button>
+          <button class="lang-btn" data-lang="en-US" onclick="setLang(this)">English</button>
+          <button class="lang-btn" data-lang="zh-CN" onclick="setLang(this)">中文</button>
+        </div>
+        <button class="btn-sm" onclick="clearVoice()" id="clear-voice-btn">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>クリア
+        </button>
+      </div>
 
-      <!-- ===== UPPER BUILDING: 首都国際会展中心 ===== -->
-      <rect x="60" y="30" width="560" height="460" rx="12" fill="none" stroke="#d4a832" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
-      <text x="340" y="22" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="500" fill="#d4a832" opacity=".8">首都国際会展中心</text>
+      <!-- Short mode: transcript -->
+      <div id="short-result">
+        <div class="transcript-box" id="transcript-box">
+          <span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>
+        </div>
+      </div>
 
-      <!-- Entries upper -->
-      <text x="340" y="54" text-anchor="middle" font-size="9" fill="#9a9890">▼ 北登録庁 North Entry</text>
-      <text x="590" y="260" text-anchor="end" font-size="9" fill="#9a9890">East Entry →</text>
-      <text x="340" y="480" text-anchor="middle" font-size="9" fill="#9a9890">▲ 南登録庁 South Entry</text>
-
-      <!-- A halls (right column) -->
-      <rect x="370" y="66" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832">A1</text>
-      <text x="475" y="112" text-anchor="middle" font-size="9" fill="#9a9890">ZEEKR / LYNK&CO / 吉利銀河</text>
-
-      <rect x="370" y="142" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="475" y="171" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">A2</text>
-      <text x="475" y="188" text-anchor="middle" font-size="9" fill="#5e5d58">（対象外）</text>
-
-      <rect x="370" y="286" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="315" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832">A3</text>
-      <text x="475" y="332" text-anchor="middle" font-size="9" fill="#9a9890">GAC / 東風</text>
-
-      <rect x="370" y="362" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="391" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832">A4</text>
-      <text x="475" y="408" text-anchor="middle" font-size="9" fill="#9a9890">Li Auto / 小米</text>
-
-      <!-- B halls (left column) -->
-      <rect x="100" y="66" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="205" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B1</text>
-      <text x="205" y="112" text-anchor="middle" font-size="9" fill="#5e5d58">（対象外）</text>
-
-      <rect x="100" y="142" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="205" y="171" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B2</text>
-      <text x="205" y="188" text-anchor="middle" font-size="9" fill="#5e5d58">（対象外）</text>
-
-      <rect x="100" y="218" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="205" y="247" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832">B3</text>
-      <text x="205" y="264" text-anchor="middle" font-size="9" fill="#9a9890">長安 / Deepal / Toyota</text>
-
-      <rect x="100" y="294" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="205" y="323" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832">B4</text>
-      <text x="205" y="340" text-anchor="middle" font-size="9" fill="#9a9890">鸿蒙智行</text>
-
-      <rect x="100" y="370" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="205" y="399" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B5</text>
-      <text x="205" y="416" text-anchor="middle" font-size="9" fill="#5e5d58">（対象外）</text>
-
-      <!-- ===== CONNECTION ZONE ===== -->
-      <line x1="240" y1="500" x2="240" y2="540" stroke="#5e5d58" stroke-width="1" stroke-dasharray="4 3"/>
-      <line x1="440" y1="500" x2="440" y2="540" stroke="#5e5d58" stroke-width="1" stroke-dasharray="4 3"/>
-      <text x="340" y="525" text-anchor="middle" font-size="10" fill="#5e5d58" font-weight="500">▼ 建物間の移動（徒歩） ▼</text>
-
-      <!-- ===== LOWER BUILDING: 中国国際展覧中心（順義） ===== -->
-      <rect x="60" y="550" width="560" height="350" rx="12" fill="none" stroke="#2d8cf0" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
-      <text x="340" y="542" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="500" fill="#2d8cf0" opacity=".8">中国国際展覧中心（順義館）</text>
-
-      <!-- Entries lower -->
-      <text x="340" y="568" text-anchor="middle" font-size="9" fill="#9a9890">▼ 北登録庁</text>
-      <text x="590" y="720" text-anchor="end" font-size="9" fill="#9a9890">東登録庁 →</text>
-      <text x="90" y="720" text-anchor="start" font-size="9" fill="#9a9890">← 西登録庁</text>
-      <text x="340" y="892" text-anchor="middle" font-size="9" fill="#9a9890">▲ 南登録庁 ＋ 地下鉄15号線「国展」駅</text>
-
-      <!-- E halls (right column) -->
-      <rect x="370" y="578" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="607" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">E4</text>
-      <text x="475" y="624" text-anchor="middle" font-size="9" fill="#9a9890">Mercedes / BAIC</text>
-
-      <rect x="370" y="654" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="683" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">E3</text>
-      <text x="475" y="700" text-anchor="middle" font-size="9" fill="#9a9890">BYD 全ブランド</text>
-
-      <rect x="370" y="736" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="765" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">E2</text>
-      <text x="475" y="782" text-anchor="middle" font-size="9" fill="#9a9890">XPENG / NIO / 问界</text>
-
-      <rect x="370" y="812" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="475" y="841" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">E1</text>
-      <text x="475" y="858" text-anchor="middle" font-size="9" fill="#9a9890">LUXEED / CHERY / EXEED</text>
-
-      <!-- W halls (left column) -->
-      <rect x="100" y="578" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="205" y="607" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">W4</text>
-      <text x="205" y="624" text-anchor="middle" font-size="9" fill="#9a9890">BMW / トヨタ紡織</text>
-
-      <rect x="100" y="654" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".18" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".4"/>
-      <text x="205" y="683" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0">W3</text>
-      <text x="205" y="700" text-anchor="middle" font-size="9" fill="#9a9890">AVATR / 華為乾崑</text>
-
-      <rect x="100" y="736" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".12" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="205" y="765" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0" opacity=".5">W2</text>
-      <text x="205" y="782" text-anchor="middle" font-size="9" fill="#5e5d58">サプライヤー</text>
-
-      <rect x="100" y="812" width="210" height="64" rx="6" fill="#2d8cf0" opacity=".12" stroke="#2d8cf0" stroke-width=".5" stroke-opacity=".3"/>
-      <text x="205" y="841" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="700" fill="#2d8cf0" opacity=".5">W1</text>
-      <text x="205" y="858" text-anchor="middle" font-size="9" fill="#5e5d58">サプライヤー</text>
-
-      <!-- Station icon -->
-      <rect x="290" y="898" width="100" height="18" rx="9" fill="#2d8cf0" opacity=".2"/>
-      <text x="340" y="910" text-anchor="middle" font-size="9" font-weight="500" fill="#2d8cf0">🚇 国展駅</text>
-
-    </svg>
+      <!-- Long mode: audio player -->
+      <div id="long-result" style="display:none">
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-height:52px;display:flex;align-items:center;gap:10px">
+          <svg style="width:16px;height:16px;stroke:var(--muted);stroke-width:1.5;fill:none;flex-shrink:0" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span id="long-status" style="font-family:var(--mono);font-size:11px;color:var(--muted);flex:1">音声データなし</span>
+          <audio id="audio-player" controls style="display:none;max-width:180px;height:28px"></audio>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5">端末に音声データを保存します。GitHubには保存されません。<br>文字起こしはWhisper API対応後に実装予定。</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">観察カテゴリ</div>
+      <div class="cat-wrap" id="memo-cats"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tags-wrap" id="memo-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="memo-tag-input" placeholder="カスタムタグ…">
+        <button class="btn-sm" onclick="addTag('memo')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>追加
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" id="memo-save-btn" onclick="saveMemo()">メモを保存</button>
   </div>
 
-  <div class="map-legend">
-    <div class="map-legend-item"><div class="dot" style="background:#d4a832;"></div> 首都国際会展中心（A・B列）— 上側建物</div>
-    <div class="map-legend-item"><div class="dot" style="background:#2d8cf0;"></div> 中国国際展覧中心 順義館（E・W列）— 下側建物</div>
-    <div class="map-legend-item"><div class="dot" style="opacity:.7;background:repeating-linear-gradient(45deg,#9a9890 0 2px,transparent 2px 5px);"></div> 色が薄いホール = 今回の訪問対象外</div>
+  <!-- ══ PHOTO ══ -->
+  <div id="panel-photo" class="panel">
+    <div class="ts-block">
+      <span class="ts-time" id="ts-time2">--:--</span>
+      <span class="ts-date" id="ts-date2"></span>
+    </div>
+
+    <div class="api-warn" id="api-warn">
+      Claude APIキーが未設定です。設定タブで入力してください。<br>
+      <span onclick="showPanel('settings')" style="cursor:pointer;text-decoration:underline">→ 設定を開く</span>
+    </div>
+
+    <div class="capture-row">
+      <label>
+        <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none" onchange="onPhotoSelected(this)">
+        <div class="capture-btn">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          カメラ撮影
+        </div>
+      </label>
+      <label>
+        <input type="file" accept="image/*" id="gallery-input" style="display:none" onchange="onPhotoSelected(this)">
+        <div class="capture-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          ギャラリー / スクショ
+        </div>
+      </label>
+    </div>
+
+    <div class="photo-preview-wrap" id="photo-preview-wrap">
+      <img id="photo-preview" class="photo-preview" src="" alt="">
+      <div class="photo-actions">
+        <button class="btn-sm success" id="dl-current-btn" onclick="downloadCurrentPhoto()" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          この写真を保存
+        </button>
+        <button class="btn-sm" id="reanalyze-btn" onclick="runOCR()" style="display:none">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          再解析
+        </button>
+        <button class="btn-sm danger" onclick="clearPhoto()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          クリア
+        </button>
+      </div>
+    </div>
+
+    <div class="ocr-progress-wrap" id="ocr-progress-wrap">
+      <div class="field-label" style="margin-bottom:8px">OCR解析中（Claude API）</div>
+      <div class="ocr-bar-bg"><div class="ocr-bar" id="ocr-bar"></div></div>
+      <div class="ocr-label" id="ocr-label">送信中…</div>
+    </div>
+
+    <div class="ocr-result" id="ocr-result">
+      <div class="ocr-section-label">抽出テキスト</div>
+      <div class="ocr-text" id="ocr-text"></div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">メモ（任意）</div>
+      <textarea id="photo-note" placeholder="補足メモ…" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">観察カテゴリ</div>
+      <div class="cat-wrap" id="photo-cats"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tags-wrap" id="photo-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="photo-tag-input" placeholder="カスタムタグ…">
+        <button class="btn-sm" onclick="addTag('photo')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>追加
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" id="photo-save-btn" onclick="savePhoto()" disabled>OCR完了後に保存できます</button>
   </div>
-</div>
 
-<!-- ========== ACCESS INFO ========== -->
-<div class="access-bar">
-  <div class="access-card">
-    <div class="lbl">南側入口（E列最寄り）</div>
-    <div class="val">地下鉄15号線「国展」駅 <em>→ E1直結</em></div>
+  <!-- ══ HISTORY ══ -->
+  <div id="panel-history" class="panel">
+    <div class="tl-toolbar">
+      <span class="tl-count" id="tl-count">0 件</span>
+      <button class="btn-sm" onclick="ghPull()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        GitHub同期
+      </button>
+    </div>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div id="timeline-list"></div>
   </div>
-  <div class="access-card">
-    <div class="lbl">北側入口（A列最寄り）</div>
-    <div class="val">北登録庁 <em>→ A1直結</em></div>
+
+  <!-- ══ MAP ══ -->
+  <div id="panel-map" class="panel">
+    <div class="map-inner">
+
+      <!-- Map Tab Switcher -->
+      <div class="map-tab-bar">
+        <button class="map-tab active" onclick="switchMapView('layout',this)">会場レイアウト</button>
+        <button class="map-tab" onclick="switchMapView('route-s',this)">南→北ルート</button>
+        <button class="map-tab" onclick="switchMapView('route-n',this)">北→南ルート</button>
+      </div>
+
+      <!-- VIEW: Layout Map -->
+      <div class="map-view active" id="mv-layout">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 6px">
+          <svg width="100%" viewBox="0 0 680 920" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:340px">
+            <rect x="60" y="30" width="560" height="460" rx="12" fill="none" stroke="#d4a832" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
+            <text x="340" y="22" text-anchor="middle" font-size="11" font-weight="500" fill="#d4a832" opacity=".8">首都国際会展中心</text>
+            <text x="340" y="54" text-anchor="middle" font-size="9" fill="#6b7280">▼ 北登録庁</text>
+            <text x="340" y="480" text-anchor="middle" font-size="9" fill="#6b7280">▲ 南登録庁</text>
+            <rect x="370" y="66" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="95" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">A1</text>
+            <text x="475" y="112" text-anchor="middle" font-size="9" fill="#6b7280">ZEEKR / LYNK&amp;CO / 吉利銀河</text>
+            <rect x="370" y="142" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="475" y="171" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">A2</text>
+            <text x="475" y="188" text-anchor="middle" font-size="9" fill="#4b5563">（対象外）</text>
+            <rect x="370" y="286" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="315" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">A3</text>
+            <text x="475" y="332" text-anchor="middle" font-size="9" fill="#6b7280">GAC / 東風</text>
+            <rect x="370" y="362" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="391" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">A4</text>
+            <text x="475" y="408" text-anchor="middle" font-size="9" fill="#6b7280">Li Auto / 小米</text>
+            <rect x="100" y="66" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="205" y="95" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B1</text>
+            <text x="205" y="112" text-anchor="middle" font-size="9" fill="#4b5563">（対象外）</text>
+            <rect x="100" y="142" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="205" y="171" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B2</text>
+            <text x="205" y="188" text-anchor="middle" font-size="9" fill="#4b5563">（対象外）</text>
+            <rect x="100" y="218" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="205" y="247" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">B3</text>
+            <text x="205" y="264" text-anchor="middle" font-size="9" fill="#6b7280">長安 / Deepal / Toyota</text>
+            <rect x="100" y="294" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="205" y="323" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">B4</text>
+            <text x="205" y="340" text-anchor="middle" font-size="9" fill="#6b7280">鸿蒙智行</text>
+            <rect x="100" y="370" width="210" height="64" rx="6" fill="#d4a832" opacity=".12" stroke="#d4a832" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="205" y="399" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832" opacity=".5">B5</text>
+            <text x="205" y="416" text-anchor="middle" font-size="9" fill="#4b5563">（対象外）</text>
+            <line x1="240" y1="500" x2="240" y2="540" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 3"/>
+            <line x1="440" y1="500" x2="440" y2="540" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="340" y="525" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="500">▼ 建物間移動（徒歩5〜8分） ▼</text>
+            <rect x="60" y="550" width="560" height="350" rx="12" fill="none" stroke="#60a5fa" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
+            <text x="340" y="542" text-anchor="middle" font-size="11" font-weight="500" fill="#60a5fa" opacity=".8">中国国際展覧中心（順義館）</text>
+            <text x="340" y="568" text-anchor="middle" font-size="9" fill="#6b7280">▼ 北登録庁</text>
+            <text x="340" y="892" text-anchor="middle" font-size="9" fill="#6b7280">▲ 南登録庁 ＋ 🚇 国展駅</text>
+            <rect x="370" y="578" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="607" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">E4</text>
+            <text x="475" y="624" text-anchor="middle" font-size="9" fill="#6b7280">Mercedes / BAIC</text>
+            <rect x="370" y="654" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="683" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">E3</text>
+            <text x="475" y="700" text-anchor="middle" font-size="9" fill="#6b7280">BYD 全ブランド</text>
+            <rect x="370" y="736" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="765" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">E2</text>
+            <text x="475" y="782" text-anchor="middle" font-size="9" fill="#6b7280">XPENG / NIO / 问界</text>
+            <rect x="370" y="812" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="475" y="841" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">E1</text>
+            <text x="475" y="858" text-anchor="middle" font-size="9" fill="#6b7280">LUXEED / CHERY / EXEED</text>
+            <rect x="100" y="578" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="205" y="607" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">W4</text>
+            <text x="205" y="624" text-anchor="middle" font-size="9" fill="#6b7280">BMW / トヨタ紡織</text>
+            <rect x="100" y="654" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
+            <text x="205" y="683" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">W3</text>
+            <text x="205" y="700" text-anchor="middle" font-size="9" fill="#6b7280">AVATR / 華為乾崑</text>
+            <rect x="100" y="736" width="210" height="64" rx="6" fill="#60a5fa" opacity=".12" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="205" y="765" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa" opacity=".5">W2</text>
+            <text x="205" y="782" text-anchor="middle" font-size="9" fill="#4b5563">サプライヤー</text>
+            <rect x="100" y="812" width="210" height="64" rx="6" fill="#60a5fa" opacity=".12" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".3"/>
+            <text x="205" y="841" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa" opacity=".5">W1</text>
+            <text x="205" y="858" text-anchor="middle" font-size="9" fill="#4b5563">サプライヤー</text>
+            <rect x="290" y="898" width="100" height="18" rx="9" fill="#60a5fa" opacity=".2"/>
+            <text x="340" y="910" text-anchor="middle" font-size="9" font-weight="500" fill="#60a5fa">🚇 国展駅</text>
+          </svg>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#d4a832"></span>首都国際会展（A・B列）</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa"></span>順義館（E・W列）</span>
+        </div>
+      </div>
+
+      <!-- VIEW: South→North Route -->
+      <div class="map-view" id="mv-route-s">
+        <div class="rt-intro" style="border-left:3px solid var(--accent)">
+          <div style="font-weight:600;font-size:13px;margin-bottom:2px">南→北ルート（国展駅スタート）</div>
+          <div style="font-size:11px;color:var(--muted)">地下鉄15号線「国展」駅から直結。BYD・XPENGを朝一で確保し、上側建物へ北上</div>
+        </div>
+        <div class="rt-list">
+          <div class="rt-step"><span class="rt-dot s">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span></div><div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div><div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div><div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div><div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div><div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div><div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div><div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div><div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI / 後席VLM<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京81 観音門<span class="rt-tag dr">DOOR</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">W3 → 華為乾崑 → W4 BMW・紡織</div></div>
+          <div class="rt-step"><span class="rt-dot s">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div><div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">建物間移動（徒歩5〜8分）昼食休憩推奨</div></div>
+          <div class="rt-step"><span class="rt-dot s">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A101</span><span class="rt-nt">MIX / 007GT<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div><div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A102</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div><div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div><div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div></div></div></div>
+        </div>
+      </div>
+
+      <!-- VIEW: North→South Route -->
+      <div class="map-view" id="mv-route-n">
+        <div class="rt-intro" style="border-left:3px solid var(--info)">
+          <div style="font-weight:600;font-size:13px;margin-bottom:2px">北→南ルート（北門スタート）</div>
+          <div style="font-size:11px;color:var(--muted)">上側建物・北登録庁からスタート。午後にE列に到達し混雑を回避</div>
+        </div>
+        <div class="rt-list">
+          <div class="rt-step"><span class="rt-dot n">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A101</span><span class="rt-nt">MIX / 007GT<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div><div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A102</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div><div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">A4 → B3（同建物内移動）</div></div>
+          <div class="rt-step"><span class="rt-dot n">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div><div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">建物間移動（徒歩5〜8分）昼食休憩推奨</div></div>
+          <div class="rt-step"><span class="rt-dot n">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div><div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">W3 → E4（同建物内・北側横切り）</div></div>
+          <div class="rt-step"><span class="rt-dot n">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI / 後席VLM<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京81 観音門<span class="rt-tag dr">DOOR</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div><div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div><div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div><div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div><div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div><div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span></div><div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div><div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div><div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <div class="access-card">
-    <div class="lbl">建物間移動</div>
-    <div class="val">南登録庁 ↔ 北登録庁 <em>徒歩約5〜8分</em></div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div id="panel-settings" class="panel">
+    <div class="sg">
+      <div class="sg-title">環境プロファイル</div>
+      <div class="profile-tabs">
+        <button class="ptab active private" id="ptab-private" onclick="switchProfile('private')">プライベート</button>
+        <button class="ptab work" id="ptab-work" onclick="switchProfile('work')">業務</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7" id="profile-desc">
+        OCR：Claude API（Haiku 4.5）<br>保存先：GitHub
+      </div>
+    </div>
+
+    <div id="pane-private">
+      <div class="sg">
+        <div class="sg-title">Claude API（プライベート）</div>
+        <div class="sr">
+          <div class="sr-label">APIキー</div>
+          <input type="password" id="s-claude-private" placeholder="sk-ant-api03-...">
+          <div class="sr-note">console.anthropic.com でAPIアカウントを作成して発行。<br>OCRに使用（0.43円/枚目安）。使わなければ課金なし。</div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">GitHub（プライベート）</div>
+        <div class="sr">
+          <div class="sr-label">Personal Access Token</div>
+          <input type="password" id="s-token" placeholder="ghp_xxxxxxxxxxxx">
+          <div class="sr-note">Settings → Developer settings → Personal access tokens → Fine-grained tokens<br>Contents の Read/Write 権限が必要。</div>
+        </div>
+        <div class="sr">
+          <div class="sr-label">ユーザー名（Owner）</div>
+          <input type="text" id="s-owner" placeholder="your-username">
+        </div>
+        <div class="sr">
+          <div class="sr-label">リポジトリ名</div>
+          <input type="text" id="s-repo" placeholder="fieldmemo-data">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ブランチ</div>
+          <input type="text" id="s-branch" placeholder="main">
+        </div>
+      </div>
+    </div>
+
+    <div id="pane-work" style="display:none">
+      <div class="sg">
+        <div class="sg-title">Claude API（業務）</div>
+        <div class="sr">
+          <div class="sr-label">法人APIキー</div>
+          <input type="password" id="s-claude-work" placeholder="sk-ant-api03-...">
+          <div class="sr-note">Enterpriseプランの管理者から取得。OCR・解析に使用。</div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">GitHub（業務） ※OneDrive対応まで暫定</div>
+        <div class="sr">
+          <div class="sr-label">Personal Access Token</div>
+          <input type="password" id="s-token-work" placeholder="ghp_xxxxxxxxxxxx">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ユーザー名（Owner）</div>
+          <input type="text" id="s-owner-work" placeholder="work-username">
+        </div>
+        <div class="sr">
+          <div class="sr-label">リポジトリ名</div>
+          <input type="text" id="s-repo-work" placeholder="fieldmemo-work">
+        </div>
+        <div class="sr">
+          <div class="sr-label">ブランチ</div>
+          <input type="text" id="s-branch-work" placeholder="main">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn-sm" onclick="saveSettings()">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        設定保存
+      </button>
+      <button class="btn-sm" onclick="testGH()">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        GitHub接続テスト
+      </button>
+    </div>
+
+    <div class="sg">
+      <div class="sg-title">タグプリセット（共通）</div>
+      <div class="sr">
+        <textarea id="s-tags" rows="2" placeholder="要フォロー,先進的,標準的,回帰的" style="min-height:48px;font-size:13px"></textarea>
+        <div class="sr-note">カンマ区切り。変更後「保存」を押してください。</div>
+      </div>
+      <div class="sr" style="margin-top:10px">
+        <div class="sr-label">観察カテゴリ</div>
+        <textarea id="s-cats" rows="2" placeholder="ブース外観,電装品,ドアアクセス,電源ON,ADAS,バッテリー,展示パネル,UI/UX" style="min-height:48px;font-size:13px"></textarea>
+        <div class="sr-note">カンマ区切り。タグとは別レイヤーで管理されます。</div>
+      </div>
+      <button class="btn-sm" onclick="saveTags()" style="margin-top:4px">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        タグ・カテゴリ保存
+      </button>
+    </div>
+
+    <div class="sg">
+      <div class="sg-title">データ出力</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="exportMarkdown()">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Markdown出力
+        </button>
+        <button class="btn-sm success" onclick="exportPhotosZip()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          写真をZIPで出力
+        </button>
+        <button class="btn-sm danger" onclick="clearLocal()">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          ローカル削除
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6">
+        <b>写真ZIPの送り方（iOS → Windows）</b><br>
+        ① ZIPをダウンロード → 「ファイル」アプリに保存<br>
+        ② 「ファイル」アプリ → ZIPを長押し → 「共有」→ OneDrive<br>
+        ③ Windows の OneDriveフォルダで受け取る<br>
+        ※ メール添付は1通25MB制限あり。大量写真はOneDrive推奨。
+      </div>
+    </div>
+    <div style="height:20px"></div>
   </div>
+
+  <nav class="tabbar">
+    <button id="tab-btn-memo" class="active" onclick="showPanel('memo')">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      メモ
+    </button>
+    <button id="tab-btn-photo" onclick="showPanel('photo')">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      写真
+    </button>
+    <button id="tab-btn-history" onclick="showPanel('history')">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      履歴
+    </button>
+    <button id="tab-btn-map" onclick="showPanel('map')">
+      <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      MAP
+    </button>
+    <button id="tab-btn-settings" onclick="showPanel('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      設定
+    </button>
+  </nav>
+  <div class="safe-area-bottom"></div>
 </div>
 
-<!-- ========== ROUTE TABS ========== -->
-<h2 class="sec-title">回遊ルート</h2>
-
-<div class="legend">
-  <div class="legend-item"><span class="tech-tag cockpit">COCKPIT</span> 智能座舱</div>
-  <div class="legend-item"><span class="tech-tag door">DOOR</span> ドアアクセス</div>
-  <div class="legend-item"><span class="tech-tag ev">EV</span> 電動化</div>
-  <div class="legend-item"><span class="tech-tag adas">ADAS</span> 自動運転</div>
-</div>
-
-<div class="tab-group">
-  <button class="tab-btn act-s" onclick="switchTab('south')" id="tab-south">
-    ↑ 南→北（国展駅スタート）
-  </button>
-  <button class="tab-btn" onclick="switchTab('north')" id="tab-north">
-    ↓ 北→南（北門スタート）
-  </button>
-</div>
-
-<!-- ===== SOUTH → NORTH ROUTE ===== -->
-<div class="tab-content active" id="content-south">
-
-<div class="route-intro south">
-  <h3>南→北コース：国展駅から出発</h3>
-  <p>地下鉄15号線「国展」駅 → 南登録庁からE1へ直接入場。下側建物（E・W列）を先に回り、建物間を徒歩で移動した後、上側建物（A・B列）を巡る構成。朝一番でBYD・XPENGなど人気ブースを混雑前に見られるメリットがあります。</p>
-</div>
-
-<div class="timeline">
-
-  <div class="bldg-label"><div class="bldg-dot" style="background:#2d8cf0;"></div>下側建物：中国国際展覧中心（順義館）</div>
-
-  <div class="tl-step"><div class="step-dot s">1</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E1</span><span class="step-brands">LUXEED / CHERY / EXEED / MINIEYE</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">智界 LUXEED</span><span class="brand-booth">E106</span><span class="brand-note">華為系ブランド</span></div>
-        <div class="brand-row"><span class="brand-name">奇瑞 CHERY</span><span class="brand-booth">E105</span></div>
-        <div class="brand-row"><span class="brand-name">星途 EXEED</span><span class="brand-booth">E102</span></div>
-        <div class="brand-row"><span class="brand-name">佑驾創新 MINIEYE</span><span class="brand-booth">E110</span><span class="brand-note">AIエージェント「BamBam」<span class="tech-tag cockpit">COCKPIT</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">2</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E2</span><span class="step-brands">XPENG / NIO / 问界</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">小鹏 XPENG</span><span class="brand-booth">E202</span><span class="brand-note">GX：17.3インチ3K / 33スピーカーAI<span class="tech-tag cockpit">COCKPIT</span></span></div>
-        <div class="brand-row"><span class="brand-name">蔚来 NIO</span><span class="brand-booth">E203</span><span class="brand-note">ONVO / firefly 含む3ブランド</span></div>
-        <div class="brand-row"><span class="brand-name">问界 AITO</span><span class="brand-booth">E201</span><span class="brand-note">華為系</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">3</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E3</span><span class="step-brands">BYD全ブランド</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">比亜迪 BYD</span><span class="brand-booth">E302</span><span class="brand-note">ホール全体占有<span class="tech-tag ev">EV</span></span></div>
-        <div class="brand-row"><span class="brand-name">騰勢 DENZA</span><span class="brand-booth">E301</span></div>
-        <div class="brand-row"><span class="brand-name">方程豹</span><span class="brand-booth">E305</span></div>
-        <div class="brand-row"><span class="brand-name">仰望 YANGWANG</span><span class="brand-booth">E303</span></div>
-        <div class="brand-row"><span class="brand-name">天神之眼</span><span class="brand-booth">E306</span><span class="brand-note">BYD ADAS<span class="tech-tag adas">ADAS</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">4</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E4</span><span class="step-brands">Mercedes-Benz / BAIC</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">Mercedes-Benz</span><span class="brand-booth">E402</span><span class="brand-note">MB.OS AI / 後席VLM<span class="tech-tag cockpit">COCKPIT</span></span></div>
-        <div class="brand-row"><span class="brand-name">BAIC 北汽集団</span><span class="brand-booth">E403</span><span class="brand-note">享界 / 極狐 / 北京越野 / 北京81 観音門<span class="tech-tag door">DOOR</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>E4 → W3</strong>（同建物内・北側を横切って西列へ）</div></div>
-
-  <div class="tl-step"><div class="step-dot s">5</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">W3</span><span class="step-brands">AVATR / 華為乾崑</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">阿維塔 AVATR</span><span class="brand-booth">W303</span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑</span><span class="brand-booth">W301</span><span class="brand-note">車載PF中核<span class="tech-tag adas">ADAS</span></span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑｜啓境</span><span class="brand-booth">W304</span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑｜奕境</span><span class="brand-booth">W305</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">6</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">W4</span><span class="step-brands">BMW / トヨタ紡織</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">BMW / MINI</span><span class="brand-booth">W402-403</span><span class="brand-note">iX3 LWB 半隠し式ハンドル<span class="tech-tag door">DOOR</span></span></div>
-        <div class="brand-row"><span class="brand-name">トヨタ紡織</span><span class="brand-booth">W405</span><span class="brand-note">LOUNZE+<span class="tech-tag cockpit">COCKPIT</span><span class="tech-tag door">DOOR</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>下側建物 → 上側建物へ徒歩移動</strong>（北登録庁 → 南登録庁 約5〜8分。昼食休憩ポイント推奨）</div></div>
-
-  <div class="bldg-label"><div class="bldg-dot" style="background:#d4a832;"></div>上側建物：首都国際会展中心</div>
-
-  <div class="tl-step"><div class="step-dot s">7</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A1</span><span class="step-brands">ZEEKR / LYNK&CO / 吉利銀河</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">極氪 ZEEKR</span><span class="brand-booth">A102</span></div>
-        <div class="brand-row"><span class="brand-name">領克 LYNK & CO</span><span class="brand-booth">A103</span></div>
-        <div class="brand-row"><span class="brand-name">吉利銀河</span><span class="brand-booth">A104</span><span class="brand-note">吉利3ブランド一括比較</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">8</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A3</span><span class="step-brands">GAC（広汽伝祺・AION・Hyptec）</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">GAC 広汽集団</span><span class="brand-booth">A307-308</span><span class="brand-note">伝祺 / AION / Hyptec</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">9</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A4</span><span class="step-brands">Li Auto / 小米</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">理想 Li Auto</span><span class="brand-booth">A401</span></div>
-        <div class="brand-row"><span class="brand-name">小米 Xiaomi</span><span class="brand-booth">A402</span><span class="brand-note">生体認証起動<span class="tech-tag cockpit">COCKPIT</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>A4 → B3</strong>（同建物内・A列からB列へ移動）</div></div>
-
-  <div class="tl-step"><div class="step-dot s">10</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">B3</span><span class="step-brands">長安 / Deepal</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">長安汽車</span><span class="brand-booth">B301</span></div>
-        <div class="brand-row"><span class="brand-name">深藍 Deepal</span><span class="brand-booth">B302</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot s">11</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">B4</span><span class="step-brands">鸿蒙智行</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">鸿蒙智行</span><span class="brand-booth">B406</span><span class="brand-note">Huaweiエコ統合展示<span class="tech-tag adas">ADAS</span></span></div>
-      </div></div></div>
-
-</div>
-</div>
-
-<!-- ===== NORTH → SOUTH ROUTE ===== -->
-<div class="tab-content" id="content-north">
-
-<div class="route-intro north">
-  <h3>北→南コース：北門から出発</h3>
-  <p>車来場・北登録庁から入場するルート。上側建物（A・B列）を午前に消化し、建物間を移動して昼食休憩。午後に下側建物（E・W列）を回ることで、BYDなど人気ブースの混雑ピーク（午前）を避けられます。帰りは国展駅へ南下。</p>
-</div>
-
-<div class="timeline">
-
-  <div class="bldg-label"><div class="bldg-dot" style="background:#d4a832;"></div>上側建物：首都国際会展中心</div>
-
-  <div class="tl-step"><div class="step-dot n">1</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A1</span><span class="step-brands">ZEEKR / LYNK&CO / 吉利銀河</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">極氪 ZEEKR</span><span class="brand-booth">A102</span></div>
-        <div class="brand-row"><span class="brand-name">領克 LYNK & CO</span><span class="brand-booth">A103</span></div>
-        <div class="brand-row"><span class="brand-name">吉利銀河</span><span class="brand-booth">A104</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">2</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A3</span><span class="step-brands">GAC（広汽伝祺・AION・Hyptec）</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">GAC 広汽集団</span><span class="brand-booth">A307-308</span><span class="brand-note">伝祺 / AION / Hyptec</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">3</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">A4</span><span class="step-brands">Li Auto / 小米</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">理想 Li Auto</span><span class="brand-booth">A401</span></div>
-        <div class="brand-row"><span class="brand-name">小米 Xiaomi</span><span class="brand-booth">A402</span><span class="brand-note">生体認証起動<span class="tech-tag cockpit">COCKPIT</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>A4 → B3</strong>（同建物内移動）</div></div>
-
-  <div class="tl-step"><div class="step-dot n">4</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">B3</span><span class="step-brands">長安 / Deepal</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">長安汽車</span><span class="brand-booth">B301</span></div>
-        <div class="brand-row"><span class="brand-name">深藍 Deepal</span><span class="brand-booth">B302</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">5</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">B4</span><span class="step-brands">鸿蒙智行</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">鸿蒙智行</span><span class="brand-booth">B406</span><span class="brand-note">Huaweiエコ統合展示<span class="tech-tag adas">ADAS</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>上側建物 → 下側建物へ徒歩移動</strong>（南登録庁 → 北登録庁 約5〜8分。昼食休憩ポイント推奨）</div></div>
-
-  <div class="bldg-label"><div class="bldg-dot" style="background:#2d8cf0;"></div>下側建物：中国国際展覧中心（順義館）</div>
-
-  <div class="tl-step"><div class="step-dot n">6</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">W4</span><span class="step-brands">BMW / トヨタ紡織</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">BMW / MINI</span><span class="brand-booth">W402-403</span><span class="brand-note">iX3 LWB 半隠し式ハンドル<span class="tech-tag door">DOOR</span></span></div>
-        <div class="brand-row"><span class="brand-name">トヨタ紡織</span><span class="brand-booth">W405</span><span class="brand-note">LOUNZE+<span class="tech-tag cockpit">COCKPIT</span><span class="tech-tag door">DOOR</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">7</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">W3</span><span class="step-brands">AVATR / 華為乾崑</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">阿維塔 AVATR</span><span class="brand-booth">W303</span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑</span><span class="brand-booth">W301</span><span class="brand-note">車載PF中核<span class="tech-tag adas">ADAS</span></span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑｜啓境</span><span class="brand-booth">W304</span></div>
-        <div class="brand-row"><span class="brand-name">華為乾崑｜奕境</span><span class="brand-booth">W305</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot xfer">▸</div>
-    <div class="xfer-card"><strong>W3 → E4</strong>（同建物内・北側を横切って東列へ）</div></div>
-
-  <div class="tl-step"><div class="step-dot n">8</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E4</span><span class="step-brands">Mercedes-Benz / BAIC</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">Mercedes-Benz</span><span class="brand-booth">E402</span><span class="brand-note">MB.OS AI / 後席VLM<span class="tech-tag cockpit">COCKPIT</span></span></div>
-        <div class="brand-row"><span class="brand-name">BAIC 北汽集団</span><span class="brand-booth">E403</span><span class="brand-note">享界 / 極狐 / 北京81 観音門<span class="tech-tag door">DOOR</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">9</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E3</span><span class="step-brands">BYD全ブランド</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">比亜迪 BYD</span><span class="brand-booth">E302</span><span class="brand-note">ホール全体占有<span class="tech-tag ev">EV</span></span></div>
-        <div class="brand-row"><span class="brand-name">騰勢 DENZA</span><span class="brand-booth">E301</span></div>
-        <div class="brand-row"><span class="brand-name">方程豹</span><span class="brand-booth">E305</span></div>
-        <div class="brand-row"><span class="brand-name">仰望 YANGWANG</span><span class="brand-booth">E303</span></div>
-        <div class="brand-row"><span class="brand-name">天神之眼</span><span class="brand-booth">E306</span><span class="brand-note">BYD ADAS<span class="tech-tag adas">ADAS</span></span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">10</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E2</span><span class="step-brands">XPENG / NIO / 问界</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">小鹏 XPENG</span><span class="brand-booth">E202</span><span class="brand-note">GX：17.3インチ3K / 33スピーカーAI<span class="tech-tag cockpit">COCKPIT</span></span></div>
-        <div class="brand-row"><span class="brand-name">蔚来 NIO</span><span class="brand-booth">E203</span><span class="brand-note">ONVO / firefly 含む3ブランド</span></div>
-        <div class="brand-row"><span class="brand-name">问界 AITO</span><span class="brand-booth">E201</span></div>
-      </div></div></div>
-
-  <div class="tl-step"><div class="step-dot n">11</div>
-    <div class="step-card" onclick="toggleCard(this)"><div class="step-hdr"><span class="step-hall">E1</span><span class="step-brands">LUXEED / CHERY / EXEED / MINIEYE</span><span class="step-toggle">▾</span></div>
-      <div class="step-details">
-        <div class="brand-row"><span class="brand-name">智界 LUXEED</span><span class="brand-booth">E106</span></div>
-        <div class="brand-row"><span class="brand-name">奇瑞 CHERY</span><span class="brand-booth">E105</span></div>
-        <div class="brand-row"><span class="brand-name">星途 EXEED</span><span class="brand-booth">E102</span></div>
-        <div class="brand-row"><span class="brand-name">佑驾創新 MINIEYE</span><span class="brand-booth">E110</span><span class="brand-note">AIエージェント「BamBam」<span class="tech-tag cockpit">COCKPIT</span></span></div>
-      </div></div></div>
-
-</div>
-</div>
-
-<!-- ===== SUMMARY ===== -->
-<div class="summary">
-  <h2 class="sec-title">ルート比較</h2>
-  <div class="summary-grid">
-    <div class="sc"><div class="sc-l">訪問ホール数</div><div class="sc-v">11</div><div class="sc-n">2建物 × 11ホール（E1〜E4, W3〜W4, A1, A3〜A4, B3〜B4）</div></div>
-    <div class="sc"><div class="sc-l">重点メーカー数</div><div class="sc-v">20</div><div class="sc-n">リスト指定の全メーカーをカバー</div></div>
-    <div class="sc"><div class="sc-l">南→北のメリット</div><div class="sc-v" style="font-size:13px;font-weight:500;">朝一でBYD・XPENG</div><div class="sc-n">人気ブースを混雑前に確保。帰路は上側建物から</div></div>
-    <div class="sc"><div class="sc-l">北→南のメリット</div><div class="sc-v" style="font-size:13px;font-weight:500;">午後にE列で混雑回避</div><div class="sc-n">BYD午後着。帰路は国展駅へ直接南下</div></div>
-  </div>
-</div>
-
-</div>
+<div id="toast"></div>
+<div id="loader"><div class="loader-ring"></div><div class="loader-msg" id="loader-msg">処理中…</div></div>
 
 <script>
-function switchTab(r){
-  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(e=>{e.classList.remove('act-s','act-n');});
-  document.getElementById('content-'+r).classList.add('active');
-  document.getElementById('tab-'+r).classList.add(r==='south'?'act-s':'act-n');
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  panel: 'memo',
+  activeProfile: 'private',
+  filterTag: null,
+  filterCategory: null,
+  expandedId: null,
+  memoTags: new Set(),
+  photoTags: new Set(),
+  presetTags: ['要フォロー','先進的','標準的','回帰的'],
+  presetCategories: ['ブース外観','電装品','ドアアクセス','電源ON','ADAS','バッテリー','展示パネル','UI/UX'],
+  memoCategory: null,
+  photoCategory: null,
+  profiles: {
+    private: { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
+    work:    { claudeKey:'', gh:{token:'',owner:'',repo:'',branch:'main'} },
+  },
+  photoData: null,
+  photoMime: 'image/jpeg',
+  currentPhotoId: null,
+  ocrText: '',
+  ocrDone: false,
+  isRecording: false,
+  recMode: 'short',
+  recLang: 'ja-JP',
+  recognition: null,
+  mediaRecorder: null,
+  recInterval: null,
+  recSeconds: 0,
+  transcriptFinal: '',
+  transcriptInterim: '',
+  audioChunks: [],
+  audioBlob: null,
+  allMemos: [],
+};
+
+const prof = () => S.profiles[S.activeProfile];
+const ghConf = () => prof().gh;
+const apiKey = () => prof().claudeKey;
+
+// ============================================================
+// INDEXEDDB
+// ============================================================
+let db;
+function initDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open('fieldmemo_v4',1);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('items')){
+        const st = d.createObjectStore('items',{keyPath:'id'});
+        st.createIndex('ts','timestamp');
+      }
+      if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv',{keyPath:'k'});
+    };
+    r.onsuccess = e => { db=e.target.result; res(); };
+    r.onerror = ()=>rej(r.error);
+  });
 }
-function toggleCard(c){c.classList.toggle('open');}
+const tx = (s,m='readonly') => db.transaction(s,m).objectStore(s);
+const dbPut = v => new Promise((res,rej)=>{ const r=tx('items','readwrite').put(v); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+const dbAll = () => new Promise((res,rej)=>{ const r=tx('items').index('ts').getAll(); r.onsuccess=()=>res(r.result.slice().reverse()); r.onerror=()=>rej(r.error) });
+const dbClear = () => new Promise((res,rej)=>{ const r=tx('items','readwrite').clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+const kvGet = k => new Promise((res,rej)=>{ const r=tx('kv').get(k); r.onsuccess=()=>res(r.result?.v); r.onerror=()=>rej(r.error) });
+const kvSet = (k,v) => new Promise((res,rej)=>{ const r=tx('kv','readwrite').put({k,v}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error) });
+
+// ============================================================
+// GITHUB API
+// ============================================================
+function ghH(){ return {'Authorization':`token ${ghConf().token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'} }
+function toB64(s){ return btoa(unescape(encodeURIComponent(s))) }
+
+async function ghWrite(item){
+  const g = ghConf();
+  if(!g.token||!g.owner||!g.repo) return {ok:false,reason:'unconfigured'};
+  const payload = {...item};
+  delete payload.imageData;
+  delete payload.audioData; // never send audio to GitHub
+  const path = `memos/${item.id}.json`;
+  const url = `https://api.github.com/repos/${g.owner}/${g.repo}/contents/${path}`;
+  const body = {message:`memo: ${item.id}`,content:toB64(JSON.stringify(payload,null,2)),branch:g.branch||'main'};
+  try{ const c=await fetch(url,{headers:ghH()}); if(c.ok){const e=await c.json();body.sha=e.sha} }catch(_){}
+  const r = await fetch(url,{method:'PUT',headers:ghH(),body:JSON.stringify(body)});
+  return {ok:r.ok,status:r.status};
+}
+
+async function ghPull(){
+  const g = ghConf();
+  if(!g.token||!g.owner||!g.repo){ toast('GitHub設定が未完了です','err'); return }
+  showLoader('GitHubから取得中…');
+  try{
+    const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/contents/memos?ref=${g.branch||'main'}`,{headers:ghH()});
+    if(r.status===404){ hideLoader(); toast('memosフォルダがまだありません','info'); return }
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const files = await r.json();
+    let n=0;
+    for(const f of files){
+      if(!f.name.endsWith('.json')) continue;
+      const item = await (await fetch(f.download_url)).json();
+      item.ghSynced=true;
+      await dbPut(item); n++;
+    }
+    hideLoader(); toast(`${n}件を同期しました`,'ok');
+    if(S.panel==='history') loadHistory();
+  }catch(e){ hideLoader(); toast(`同期失敗: ${e.message}`,'err') }
+}
+
+async function testGH(){
+  await saveSettings();
+  const g = ghConf();
+  if(!g.token||!g.owner||!g.repo){ toast('設定を入力してください','err'); return }
+  showLoader('接続確認中…');
+  const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}`,{headers:ghH()});
+  hideLoader();
+  if(r.ok) toast('接続成功','ok');
+  else if(r.status===401) toast('Token認証エラー','err');
+  else if(r.status===404) toast('リポジトリが見つかりません','err');
+  else toast(`エラー ${r.status}`,'err');
+}
+
+// ============================================================
+// CLAUDE API OCR
+// ============================================================
+async function claudeOCR(imageB64, mime){
+  const key = apiKey();
+  if(!key) throw new Error('APIキーが未設定です（設定タブで入力）');
+  const b64 = imageB64.replace(/^data:image\/\w+;base64,/,'');
+  const body = {
+    model:'claude-haiku-4-5-20251001',
+    max_tokens:1024,
+    messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:mime||'image/jpeg',data:b64}},
+      {type:'text',text:'この画像に含まれるテキストをすべて抽出してください。英語・中国語・日本語すべて対応します。テキストがない場合は「（テキストなし）」とだけ返してください。説明は不要で抽出テキストのみ返してください。'}
+    ]}]
+  };
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json(); throw new Error(e.error?.message||`API ${r.status}`) }
+  return (await r.json()).content[0].text.trim();
+}
+
+// ============================================================
+// IMAGE COMPRESSION
+// ============================================================
+function compress(file, maxDim=1200, q=0.78){
+  return new Promise(res=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        if(w>maxDim||h>maxDim){ if(w>h){h=Math.round(h*maxDim/w);w=maxDim}else{w=Math.round(w*maxDim/h);h=maxDim} }
+        const cv=document.createElement('canvas');
+        cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        res(cv.toDataURL('image/jpeg',q));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================================
+// PHOTO FLOW
+// ============================================================
+async function onPhotoSelected(input){
+  const file=input.files[0]; if(!file) return;
+  showLoader('画像を処理中…');
+  S.photoData=await compress(file);
+  S.photoMime='image/jpeg';
+  S.ocrText=''; S.ocrDone=false;
+  S.currentPhotoId=null;
+  document.getElementById('photo-preview').src=S.photoData;
+  document.getElementById('photo-preview-wrap').classList.add('visible');
+  document.getElementById('dl-current-btn').style.display='';
+  document.getElementById('reanalyze-btn').style.display='none';
+  document.getElementById('ocr-result').classList.remove('visible');
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='OCR完了後に保存できます';
+  input.value=''; hideLoader();
+  await runOCR();
+}
+
+async function runOCR(){
+  if(!S.photoData){ toast('写真を選択してください','err'); return }
+  S.ocrDone=false;
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='解析中…';
+  document.getElementById('ocr-progress-wrap').classList.add('visible');
+  document.getElementById('ocr-result').classList.remove('visible');
+  setOCRProgress(20,'Claude APIに送信中…');
+  try{
+    setOCRProgress(50,'解析中…');
+    const text = await claudeOCR(S.photoData, S.photoMime);
+    S.ocrText = text || '（テキストなし）';
+    document.getElementById('ocr-text').textContent=S.ocrText;
+    document.getElementById('ocr-progress-wrap').classList.remove('visible');
+    document.getElementById('ocr-result').classList.add('visible');
+    document.getElementById('reanalyze-btn').style.display='';
+    S.ocrDone=true;
+    document.getElementById('photo-save-btn').disabled=false;
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存する';
+    toast('OCR完了','ok');
+  }catch(e){
+    document.getElementById('ocr-progress-wrap').classList.remove('visible');
+    document.getElementById('reanalyze-btn').style.display='';
+    S.ocrDone=true;
+    document.getElementById('photo-save-btn').disabled=false;
+    document.getElementById('photo-save-btn').textContent='OCRテキストを保存する（OCR失敗）';
+    toast(`OCR失敗: ${e.message}`,'err');
+  }
+}
+
+function setOCRProgress(pct,label){
+  document.getElementById('ocr-bar').style.width=pct+'%';
+  document.getElementById('ocr-label').textContent=label;
+}
+
+function clearPhoto(){
+  S.photoData=null; S.ocrText=''; S.ocrDone=false; S.currentPhotoId=null;
+  document.getElementById('photo-preview-wrap').classList.remove('visible');
+  document.getElementById('ocr-progress-wrap').classList.remove('visible');
+  document.getElementById('ocr-result').classList.remove('visible');
+  document.getElementById('photo-preview').src='';
+  document.getElementById('photo-save-btn').disabled=true;
+  document.getElementById('photo-save-btn').textContent='OCR完了後に保存できます';
+  document.getElementById('reanalyze-btn').style.display='none';
+  document.getElementById('dl-current-btn').style.display='none';
+}
+
+// ============================================================
+// PHOTO DOWNLOAD
+// ============================================================
+function downloadPhoto(base64, filename){
+  const a=document.createElement('a');
+  a.href=base64;
+  a.download=filename;
+  a.click();
+}
+
+function downloadCurrentPhoto(){
+  if(!S.photoData){ toast('写真がありません','err'); return }
+  const id = S.currentPhotoId || `photo_${fmtId()}`;
+  downloadPhoto(S.photoData, `${id}.jpg`);
+  toast('写真をダウンロードしました','ok');
+}
+
+async function exportPhotosZip(){
+  const all = await dbAll();
+  const photos = all.filter(i=>i.type==='photo'&&i.imageData);
+  if(!photos.length){ toast('端末に写真データがありません','err'); return }
+  showLoader(`ZIPを作成中… ${photos.length}枚`);
+  try{
+    const zip = new JSZip();
+    const folder = zip.folder('fieldmemo_photos');
+    photos.forEach(item=>{
+      const b64 = item.imageData.replace(/^data:image\/\w+;base64,/,'');
+      const ts = fmtTs(item.timestamp).replace(/[\/: ]/g,'-');
+      const tags = (item.tags||[]).length ? `_${item.tags.join('-')}` : '';
+      folder.file(`${item.id}${tags}.jpg`, b64, {base64:true});
+    });
+    // Also add index.md with OCR texts
+    const index = photos.map(item=>{
+      const ts = fmtTs(item.timestamp);
+      const cat = item.category ? `【${item.category}】` : '';
+      const tags = (item.tags||[]).join(', ');
+      return `## ${ts} ${cat} [${tags}]\n\n${item.ocrText||'（OCRなし）'}\n${item.note?`\nメモ: ${item.note}`:''}\n`;
+    }).join('\n---\n\n');
+    zip.file('ocr_index.md',`# FIELDMEMO 写真OCRインデックス\n生成: ${new Date().toLocaleString('ja-JP')}\n総枚数: ${photos.length}枚\n\n---\n\n${index}`);
+    const blob = await zip.generateAsync({type:'blob'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `fieldmemo_photos_${new Date().toISOString().slice(0,10)}.zip`;
+    a.click();
+    hideLoader(); toast(`${photos.length}枚をZIPに書き出しました`,'ok');
+  }catch(e){ hideLoader(); toast(`ZIP作成失敗: ${e.message}`,'err') }
+}
+
+// ============================================================
+// VOICE
+// ============================================================
+// ── mode / lang UI ──
+function setRecMode(mode){
+  if(S.isRecording) return;
+  S.recMode=mode;
+  const shortBtn=document.getElementById('mode-short-btn');
+  const longBtn=document.getElementById('mode-long-btn');
+  if(mode==='short'){
+    shortBtn.style.background='rgba(96,165,250,.15)'; shortBtn.style.color='var(--info)';
+    longBtn.style.background='transparent'; longBtn.style.color='var(--muted)';
+    document.getElementById('lang-selector').style.display='flex';
+    document.getElementById('short-result').style.display='';
+    document.getElementById('long-result').style.display='none';
+  }else{
+    longBtn.style.background='rgba(167,139,250,.15)'; longBtn.style.color='var(--purple)';
+    shortBtn.style.background='transparent'; shortBtn.style.color='var(--muted)';
+    document.getElementById('lang-selector').style.display='none';
+    document.getElementById('short-result').style.display='none';
+    document.getElementById('long-result').style.display='';
+  }
+}
+function setLang(btn){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  S.recLang=btn.dataset.lang;
+}
+
+// ── recording ──
+const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+const SHORT_LIMIT = 60;
+
+async function toggleRecording(){ S.isRecording ? stopRecording() : await startRecording() }
+
+async function startRecording(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    // iOS Safari は audio/webm 非対応。対応フォーマットを自動選択する
+    const mimeType = ['audio/mp4','audio/aac','audio/webm','audio/ogg'].find(t=>MediaRecorder.isTypeSupported(t)) || '';
+    S.mediaRecorder = mimeType ? new MediaRecorder(stream,{mimeType}) : new MediaRecorder(stream);
+    S.audioChunks=[];
+    S.mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) S.audioChunks.push(e.data) };
+    S.mediaRecorder.start(1000);
+  }catch(e){ toast('マイクへのアクセスが拒否されました','err'); return }
+  S.isRecording=true; S.transcriptFinal=''; S.transcriptInterim=''; S.recSeconds=0;
+  S.audioBlob=null;
+  updateTranscriptUI();
+  // timer
+  S.recInterval=setInterval(()=>{
+    S.recSeconds++;
+    const m=Math.floor(S.recSeconds/60), s=S.recSeconds%60;
+    const elapsed=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(S.recMode==='short'){
+      const remain=SHORT_LIMIT-S.recSeconds;
+      if(remain<=0){ stopRecording(); toast('60秒に達しました。録音を停止しました','info'); return }
+      const rm=Math.floor(remain/60), rs=remain%60;
+      document.getElementById('rec-timer').textContent=`${elapsed}　残り${String(rm).padStart(2,'0')}:${String(rs).padStart(2,'0')}`;
+    }else{
+      document.getElementById('rec-timer').textContent=elapsed;
+    }
+  },1000);
+  // short: Web Speech API
+  if(S.recMode==='short' && SR){
+    S.recognition=new SR();
+    S.recognition.lang=S.recLang;
+    S.recognition.continuous=true; S.recognition.interimResults=true;
+    S.recognition.onresult=e=>{
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) S.transcriptFinal+=e.results[i][0].transcript;
+        else interim+=e.results[i][0].transcript;
+      }
+      S.transcriptInterim=interim; updateTranscriptUI();
+    };
+    S.recognition.onerror=e=>{ if(e.error!=='aborted') toast(`音声認識エラー: ${e.error}`,'err') };
+    S.recognition.onend=()=>{ if(S.isRecording) try{ S.recognition.start() }catch(_){} };
+    try{ S.recognition.start() }catch(_){}
+  }
+  updateRecUI();
+}
+
+function stopRecording(){
+  S.isRecording=false; clearInterval(S.recInterval);
+  document.getElementById('rec-timer').textContent='';
+  if(S.recognition){ try{S.recognition.stop()}catch(_){} S.recognition.onend=null; }
+  if(S.mediaRecorder&&S.mediaRecorder.state!=='inactive'){
+    S.mediaRecorder.onstop=()=>{
+      if(S.recMode==='long' && S.audioChunks.length>0){
+        const mimeType = S.mediaRecorder.mimeType || 'audio/webm';
+        S.audioBlob=new Blob(S.audioChunks,{type:mimeType});
+        const url=URL.createObjectURL(S.audioBlob);
+        const player=document.getElementById('audio-player');
+        player.src=url; player.style.display='';
+        const dur=S.recSeconds;
+        const m=Math.floor(dur/60),s=dur%60;
+        document.getElementById('long-status').textContent=`録音完了 ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} （端末に保存）`;
+      }
+    };
+    S.mediaRecorder.stop();
+    S.mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  }
+  S.transcriptInterim=''; updateTranscriptUI(); updateRecUI();
+}
+
+function updateRecUI(){
+  const btn=document.getElementById('record-btn'),st=document.getElementById('rec-status');
+  const mic=document.getElementById('rec-mic'),stop=document.getElementById('rec-stop');
+  if(S.isRecording){
+    btn.classList.add('recording'); st.className='record-status active';
+    st.textContent= S.recMode==='short' ? '録音中（文字起こし中）… タップで停止' : '録音中… タップで停止';
+    mic.style.display='none'; stop.style.display='';
+  }else{
+    btn.classList.remove('recording'); st.className='record-status';
+    st.textContent='タップして録音開始';
+    mic.style.display=''; stop.style.display='none';
+  }
+}
+
+function updateTranscriptUI(){
+  if(S.recMode!=='short') return;
+  const box=document.getElementById('transcript-box');
+  if(S.transcriptFinal||S.transcriptInterim){
+    box.innerHTML=esc(S.transcriptFinal);
+    if(S.transcriptInterim){ const sp=document.createElement('span'); sp.style.color='var(--muted)'; sp.textContent=S.transcriptInterim; box.appendChild(sp) }
+  }else{
+    box.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:13px" id="transcript-ph">録音後に文字起こしが表示されます</span>';
+  }
+}
+
+function clearVoice(){
+  S.transcriptFinal=''; S.transcriptInterim=''; S.audioBlob=null; S.audioChunks=[];
+  updateTranscriptUI();
+  const player=document.getElementById('audio-player');
+  player.src=''; player.style.display='none';
+  document.getElementById('long-status').textContent='音声データなし';
+}
+
+// ============================================================
+// SAVE
+// ============================================================
+function genId(){
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  return `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}_${Math.random().toString(36).slice(2,6)}`;
+}
+function fmtId(){ const now=new Date(),pad=n=>String(n).padStart(2,'0'); return `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}` }
+
+async function saveMemo(){
+  const text=document.getElementById('memo-text').value.trim();
+  const voice=S.transcriptFinal.trim();
+  const hasAudio=S.recMode==='long' && S.audioBlob;
+  if(!text&&!voice&&!hasAudio){ toast('テキスト・録音いずれかが必要です','err'); return }
+  const btn=document.getElementById('memo-save-btn');
+  btn.disabled=true;
+  // Convert audioBlob to base64 for IndexedDB storage
+  let audioData=null;
+  if(hasAudio){
+    audioData=await new Promise(res=>{
+      const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(S.audioBlob);
+    });
+  }
+  const item={id:genId(),type:'memo',timestamp:new Date().toISOString(),text,voiceTranscript:voice,
+    audioData, recMode:S.recMode, recLang:S.recLang,
+    category:S.memoCategory||null,
+    tags:[...S.memoTags],profile:S.activeProfile,ghSynced:false};
+  await dbPut(item);
+  // GitHub: strip audioData (same pattern as photo)
+  let ghR={ok:false,reason:'unconfigured'};
+  const g=ghConf();
+  if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
+  document.getElementById('memo-text').value=''; clearVoice(); S.memoTags.clear(); S.memoCategory=null; renderTagChips('memo'); renderCatChips('memo');
+  btn.disabled=false;
+  const saved=hasAudio?'音声データ付きで':'';
+  ghR.reason==='unconfigured'?toast(`${saved}ローカルに保存しました`):ghR.ok?toast(`${saved}保存 + GitHub同期完了`,'ok'):toast(`${saved}保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+}
+
+async function savePhoto(){
+  if(!S.photoData){ toast('写真を選択してください','err'); return }
+  const btn=document.getElementById('photo-save-btn'); btn.disabled=true;
+  const note=document.getElementById('photo-note').value.trim();
+  const id=genId(); S.currentPhotoId=id;
+  const item={id,type:'photo',timestamp:new Date().toISOString(),imageData:S.photoData,ocrText:S.ocrText,note,category:S.photoCategory||null,tags:[...S.photoTags],profile:S.activeProfile,ghSynced:false};
+  await dbPut(item);
+  let ghR={ok:false,reason:'unconfigured'};
+  const g=ghConf();
+  if(g.token&&g.owner&&g.repo){ try{ghR=await ghWrite(item)}catch(e){ghR={ok:false,reason:e.message}} if(ghR.ok){item.ghSynced=true;await dbPut(item)} }
+  clearPhoto(); document.getElementById('photo-note').value=''; S.photoTags.clear(); S.photoCategory=null; renderTagChips('photo'); renderCatChips('photo');
+  btn.disabled=false; btn.textContent='OCR完了後に保存できます';
+  ghR.reason==='unconfigured'?toast('端末に保存しました（画像あり）'):ghR.ok?toast('保存完了。GitHubにはテキストのみ送信','ok'):toast(`端末保存済 / GitHub失敗 (${ghR.status||ghR.reason})`,'err');
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+async function loadHistory(){ const all=await dbAll(); S.allMemos=all; renderHistory(all) }
+
+function renderHistory(items){
+  let filtered=items;
+  if(S.filterCategory) filtered=filtered.filter(m=>m.category===S.filterCategory);
+  if(S.filterTag) filtered=filtered.filter(m=>(m.tags||[]).includes(S.filterTag));
+  document.getElementById('tl-count').textContent=`${filtered.length} 件`;
+
+  // Category filter row
+  const allCats=[...new Set(items.map(m=>m.category).filter(Boolean))];
+  const fb=document.getElementById('filter-bar'); fb.innerHTML='';
+  if(allCats.length){
+    [{label:'すべて',value:null},...allCats.map(c=>({label:c,value:c}))].forEach(({label,value})=>{
+      const b=document.createElement('button'); b.className='filter-chip'+(S.filterCategory===value?' on':'');
+      b.textContent=label; b.onclick=()=>{S.filterCategory=value;renderHistory(items)}; fb.appendChild(b);
+    });
+    // separator
+    const sep=document.createElement('span'); sep.style.cssText='width:1px;background:var(--border);flex-shrink:0;align-self:stretch;margin:4px 2px'; fb.appendChild(sep);
+  }
+  // Tag filters
+  const allTags=[...new Set(items.flatMap(m=>m.tags||[]))];
+  [{label:allCats.length?'全タグ':'すべて',value:null},...allTags.map(t=>({label:t,value:t}))].forEach(({label,value})=>{
+    const b=document.createElement('button'); b.className='filter-chip'+(S.filterTag===value?' on':'');
+    b.textContent=label; b.onclick=()=>{S.filterTag=value;renderHistory(items)}; fb.appendChild(b);
+  });
+
+  const list=document.getElementById('timeline-list');
+  if(!filtered.length){ list.innerHTML=`<div class="empty-state"><div class="empty-icon">[ ]</div>記録がありません</div>`; return }
+  list.innerHTML='';
+  filtered.forEach(item=>{
+    const card=document.createElement('div'); card.className='memo-card';
+    const isExp=S.expandedId===item.id;
+    const catHtml=item.category?`<span class="card-cat">${esc(item.category)}</span>`:'';
+    const tagsHtml=(item.tags||[]).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
+    let bodyHtml='';
+    if(item.type==='memo'){
+      const txt=(item.text||'')+(item.voiceTranscript?`\n[文字起こし] ${item.voiceTranscript}`:'');
+      bodyHtml=`<div class="card-body${isExp?'':' clamp'}">${esc(txt)||'（テキストなし）'}</div>`;
+      if(isExp && item.audioData){
+        bodyHtml+=`<audio controls src="${item.audioData}" style="width:100%;margin-top:8px;height:32px"></audio>`;
+        bodyHtml+=`<div class="card-note">音声データあり（端末内のみ）</div>`;
+      }
+    }else{
+      bodyHtml=item.ocrText?`<div class="card-body${isExp?'':' clamp'}">${esc(item.ocrText)}</div>`:'';
+      if(isExp){
+        if(item.imageData) bodyHtml+=`<img class="card-thumb" src="${item.imageData}" alt="">`;
+        if(item.imageData) bodyHtml+=`<div class="card-dl-row"><button class="btn-sm success" onclick="event.stopPropagation();downloadPhoto('${item.imageData}','${item.id}.jpg')"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 写真をダウンロード</button></div>`;
+        if(!item.imageData) bodyHtml+=`<div class="card-note">※ 写真は別デバイスで取得したため、この端末にはありません</div>`;
+      }
+    }
+    card.innerHTML=`
+      <div class="card-head">
+        <span class="card-ts">${fmtTs(item.timestamp)}</span>
+        ${catHtml}
+        <span class="card-type ${item.type==='photo'?'photo':'memo'}">${item.type==='photo'?'写真':'メモ'}</span>
+        ${item.ghSynced?'<span class="card-sync ok">✓ GH</span>':'<span class="card-sync">● local</span>'}
+      </div>
+      ${tagsHtml?`<div class="card-tags">${tagsHtml}</div>`:''}
+      ${bodyHtml}
+    `;
+    card.onclick=()=>{ S.expandedId=isExp?null:item.id; renderHistory(S.allMemos) };
+    list.appendChild(card);
+  });
+}
+
+// ============================================================
+// TAGS
+// ============================================================
+function renderTagChips(panel){
+  const wrap=document.getElementById(`${panel}-tags`); if(!wrap) return;
+  const sel=panel==='memo'?S.memoTags:S.photoTags;
+  wrap.innerHTML='';
+  S.presetTags.forEach(tag=>{ const b=document.createElement('button'); b.className='tag-chip'+(sel.has(tag)?' on':''); b.textContent=tag; b.onclick=()=>{sel.has(tag)?sel.delete(tag):sel.add(tag);renderTagChips(panel)}; wrap.appendChild(b) });
+  sel.forEach(tag=>{ if(!S.presetTags.includes(tag)){const b=document.createElement('button');b.className='tag-chip on';b.textContent=tag;b.onclick=()=>{sel.delete(tag);renderTagChips(panel)};wrap.appendChild(b)} });
+}
+function addTag(panel){ const inp=document.getElementById(`${panel}-tag-input`),val=inp.value.trim(); if(!val) return; (panel==='memo'?S.memoTags:S.photoTags).add(val); inp.value=''; renderTagChips(panel) }
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+function renderCatChips(panel){
+  const wrap=document.getElementById(`${panel}-cats`); if(!wrap) return;
+  const cur=panel==='memo'?S.memoCategory:S.photoCategory;
+  wrap.innerHTML='';
+  S.presetCategories.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='cat-chip'+(cur===cat?' on':'');
+    b.textContent=cat;
+    b.onclick=()=>{
+      if(panel==='memo') S.memoCategory=S.memoCategory===cat?null:cat;
+      else S.photoCategory=S.photoCategory===cat?null:cat;
+      renderCatChips(panel);
+    };
+    wrap.appendChild(b);
+  });
+}
+
+// ============================================================
+// SETTINGS / PROFILE
+// ============================================================
+function switchProfile(name){
+  S.activeProfile=name;
+  document.getElementById('ptab-private').className=`ptab${name==='private'?' active private':''}`;
+  document.getElementById('ptab-work').className=`ptab work${name==='work'?' active':''}`;
+  document.getElementById('pane-private').style.display=name==='private'?'':'none';
+  document.getElementById('pane-work').style.display=name==='work'?'':'none';
+  const badge=document.getElementById('profile-badge');
+  badge.className=`profile-badge ${name}`;
+  badge.textContent=name==='private'?'PRIVATE':'WORK';
+  document.getElementById('profile-desc').innerHTML=
+    name==='private'
+      ?`OCR：Claude API (Haiku 4.5)　約0.43円/枚<br>保存先：GitHub`
+      :`OCR：Claude API (Haiku 4.5)　法人ID<br>保存先：GitHub（OneDrive対応は後から）`;
+  updateGhStatus();
+  checkApiKey();
+  kvSet('activeProfile',name);
+}
+
+function checkApiKey(){
+  const warn=document.getElementById('api-warn');
+  if(S.panel==='photo') warn.classList.toggle('visible',!apiKey());
+}
+
+async function saveSettings(){
+  S.profiles.private.claudeKey=document.getElementById('s-claude-private').value.trim();
+  S.profiles.private.gh.token =document.getElementById('s-token').value.trim();
+  S.profiles.private.gh.owner =document.getElementById('s-owner').value.trim();
+  S.profiles.private.gh.repo  =document.getElementById('s-repo').value.trim();
+  S.profiles.private.gh.branch=document.getElementById('s-branch').value.trim()||'main';
+  S.profiles.work.claudeKey   =document.getElementById('s-claude-work').value.trim();
+  S.profiles.work.gh.token    =document.getElementById('s-token-work').value.trim();
+  S.profiles.work.gh.owner    =document.getElementById('s-owner-work').value.trim();
+  S.profiles.work.gh.repo     =document.getElementById('s-repo-work').value.trim();
+  S.profiles.work.gh.branch   =document.getElementById('s-branch-work').value.trim()||'main';
+  await kvSet('profiles',S.profiles);
+  updateGhStatus(); checkApiKey();
+  toast('設定を保存しました','ok');
+}
+
+async function saveTags(){
+  S.presetTags=document.getElementById('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  S.presetCategories=document.getElementById('s-cats').value.split(',').map(t=>t.trim()).filter(Boolean);
+  await kvSet('presetTags',S.presetTags);
+  await kvSet('presetCategories',S.presetCategories);
+  renderTagChips('memo'); renderTagChips('photo');
+  renderCatChips('memo'); renderCatChips('photo');
+  toast('タグ・カテゴリを更新しました','ok');
+}
+
+async function exportMarkdown(){
+  const all=await dbAll(); if(!all.length){toast('記録がありません','err');return}
+  const lines=all.map(item=>{
+    const ts=fmtTs(item.timestamp),tags=(item.tags||[]).length?`[${item.tags.join(', ')}] `:'';
+    const cat=item.category?`**${item.category}** `:'';
+    if(item.type==='photo') return `## 📷 ${ts} ${cat}${tags}\n\n${item.ocrText?`**OCR:** ${item.ocrText}`:''}${item.note?`\n**メモ:** ${item.note}`:''}`;
+    return `## 📝 ${ts} ${cat}${tags}\n\n${[item.text,item.voiceTranscript&&`[音声] ${item.voiceTranscript}`].filter(Boolean).join('\n')}`;
+  });
+  const md=`# FIELDMEMO Export\n生成: ${new Date().toLocaleString('ja-JP')}\n総件数: ${all.length}件\n\n---\n\n${lines.join('\n\n---\n\n')}`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download=`fieldmemo_${new Date().toISOString().slice(0,10)}.md`; a.click();
+}
+
+async function clearLocal(){
+  if(!confirm('ローカルの全記録を削除しますか？\nGitHubのデータは削除されません。')) return;
+  await dbClear(); if(S.panel==='history') loadHistory(); toast('削除しました');
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  document.getElementById(`tab-btn-${name}`).classList.add('active');
+  S.panel=name;
+  if(name==='history') loadHistory();
+  if(name==='settings') fillForm();
+  if(name==='photo') checkApiKey();
+}
+function fillForm(){
+  document.getElementById('s-claude-private').value=S.profiles.private.claudeKey||'';
+  document.getElementById('s-token').value  =S.profiles.private.gh.token||'';
+  document.getElementById('s-owner').value  =S.profiles.private.gh.owner||'';
+  document.getElementById('s-repo').value   =S.profiles.private.gh.repo||'';
+  document.getElementById('s-branch').value =S.profiles.private.gh.branch||'main';
+  document.getElementById('s-claude-work').value =S.profiles.work.claudeKey||'';
+  document.getElementById('s-token-work').value  =S.profiles.work.gh.token||'';
+  document.getElementById('s-owner-work').value  =S.profiles.work.gh.owner||'';
+  document.getElementById('s-repo-work').value   =S.profiles.work.gh.repo||'';
+  document.getElementById('s-branch-work').value =S.profiles.work.gh.branch||'main';
+  document.getElementById('s-tags').value=S.presetTags.join(',');
+  document.getElementById('s-cats').value=S.presetCategories.join(',');
+}
+function updateGhStatus(){
+  const g=ghConf(),dot=document.getElementById('gh-dot'),lbl=document.getElementById('gh-label');
+  if(g.token&&g.owner&&g.repo){dot.className='dot ok';lbl.textContent=`${g.owner}/${g.repo}`}
+  else{dot.className='dot warn';lbl.textContent='GH未設定'}
+}
+function updateClock(){
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  const t=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const d=`${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} (${['日','月','火','水','木','金','土'][now.getDay()]})`;
+  ['','2'].forEach(s=>{ document.getElementById(`ts-time${s}`).textContent=t; document.getElementById(`ts-date${s}`).textContent=d });
+}
+function fmtTs(iso){ const d=new Date(iso),pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}` }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') }
+let toastT;
+function toast(msg,type='',dur=2800){ const el=document.getElementById('toast'); el.textContent=msg; el.className=`show${type?' '+type:''}`; clearTimeout(toastT); toastT=setTimeout(()=>el.className='',dur) }
+function showLoader(msg='処理中…'){ document.getElementById('loader-msg').textContent=msg; document.getElementById('loader').classList.add('show') }
+function hideLoader(){ document.getElementById('loader').classList.remove('show') }
+
+// ============================================================
+// MAP PANEL
+// ============================================================
+function switchMapView(id,btn){
+  document.querySelectorAll('.map-view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.map-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mv-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init(){
+  await initDB();
+  const p=await kvGet('profiles'); if(p) Object.assign(S.profiles,p);
+  const ts=await kvGet('presetTags'); if(ts) S.presetTags=ts;
+  const cs=await kvGet('presetCategories'); if(cs) S.presetCategories=cs;
+  const ap=await kvGet('activeProfile'); if(ap) S.activeProfile=ap;
+  updateClock(); setInterval(updateClock,15000);
+  renderTagChips('memo'); renderTagChips('photo');
+  renderCatChips('memo'); renderCatChips('photo');
+  switchProfile(S.activeProfile);
+}
+init();
+['memo','photo'].forEach(p=>{ document.getElementById(`${p}-tag-input`).addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addTag(p)} }) });
 </script>
 </body>
 </html>
