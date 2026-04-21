@@ -22,7 +22,7 @@
   --hdr:50px;--nav:58px;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
-#app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto;overflow:hidden}
 
 header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--s1)}
 .logo{font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--accent);font-weight:500}
@@ -34,10 +34,10 @@ header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-c
 .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.warn{background:var(--accent)}
 
-.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,0px)}
+.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:20px;overscroll-behavior:contain}
 .panel.active{display:block}
 
-.tabbar{flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border);background:var(--s1)}
+.tabbar{flex-shrink:0;flex-grow:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border);background:var(--s1);position:relative;z-index:20}
 .tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:8px 0}
 .tabbar button.active{color:var(--accent)}
 .tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -119,7 +119,9 @@ textarea{line-height:1.65}
 .tl-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
 .tl-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .filter-bar{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
-.filter-bar::-webkit-scrollbar{display:none}
+.filter-bar.rt-note{margin-top:6px;padding:6px 8px;background:var(--s3);border-radius:4px;font-size:10px;color:var(--muted);border-left:2px solid var(--accent);line-height:1.5}
+.rt-note b{color:var(--accent);font-weight:500}
+::-webkit-scrollbar{display:none}
 .filter-chip{padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:var(--sans);transition:all .15s}
 .filter-chip.on{border-color:var(--accent);background:rgba(245,158,11,.1);color:var(--accent)}
 .memo-card{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s}
@@ -167,7 +169,7 @@ textarea{line-height:1.65}
 /* MAP panel */
 .map-inner{padding:0}
 .map-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--s1);position:sticky;top:0;z-index:10}
-.map-tab{flex:1;border:none;background:transparent;color:var(--muted);font-family:var(--sans);font-size:11px;padding:10px 4px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;border-bottom:2px solid transparent}
+.map-tab{flex:1;border:none;background:transparent;color:var(--muted);font-family:var(--sans);font-size:10px;padding:10px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;border-bottom:2px solid transparent;white-space:nowrap}
 .map-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .map-view{display:none;padding:12px 14px}
 .map-view.active{display:block}
@@ -199,6 +201,8 @@ textarea{line-height:1.65}
 .rt-tag.ad{background:rgba(96,165,250,.12);color:var(--info)}
 .rt-xfer{background:var(--s3);border:1px dashed var(--border);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--muted);text-align:center}
 
+.rt-note{margin-top:6px;padding:6px 8px;background:var(--s3);border-radius:4px;font-size:10px;color:var(--muted);border-left:2px solid var(--accent);line-height:1.5}
+.rt-note b{color:var(--accent);font-weight:500}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border)}
 </style>
 </head>
@@ -390,18 +394,91 @@ textarea{line-height:1.65}
 
       <!-- Map Tab Switcher -->
       <div class="map-tab-bar">
-        <button class="map-tab active" onclick="switchMapView('layout',this)">会場レイアウト</button>
-        <button class="map-tab" onclick="switchMapView('route-s',this)">南→北ルート</button>
-        <button class="map-tab" onclick="switchMapView('route-n',this)">北→南ルート</button>
+        <button class="map-tab active" onclick="switchMapView('themes',this)">テーマ</button>
+        <button class="map-tab" onclick="switchMapView('layout',this)">会場MAP</button>
+        <button class="map-tab" onclick="switchMapView('route-s',this)">南→北</button>
+        <button class="map-tab" onclick="switchMapView('route-n',this)">北→南</button>
+        <button class="map-tab" onclick="switchMapView('extra',this)">補足</button>
+      </div>
+
+      <!-- VIEW: Tech Themes -->
+      <div class="map-view active" id="mv-themes">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--accent)">注目すべき3つの技術テーマ</div>
+
+        <!-- Theme 1: Smart Cockpit -->
+        <div class="rt-card" onclick="this.classList.toggle('open')" style="margin-bottom:6px">
+          <div class="rt-hdr"><span class="rt-tag ck" style="margin-left:0;margin-right:6px">COCKPIT</span><b style="font-size:12px">智能座舱</b><span style="font-size:10px">Smart Cockpit</span><span class="rt-arr">▾</span></div>
+          <div class="rt-det">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">AIエージェント＋中央コンピュータ＋没入ディスプレイの三位一体</div>
+            <div class="rt-row"><span class="rt-bn">Harman</span><span class="rt-bb">B2</span><span class="rt-nt">CCU「Ready」（骁龍SA8775/8797）/ 量子ドット / QVUE</span></div>
+            <div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E4</span><span class="rt-nt">MB.OS AI統合 / 後席エッジVLM</span></div>
+            <div class="rt-row"><span class="rt-bn">東軟 Neusoft</span><span class="rt-bb">B4</span><span class="rt-nt">NAGIC.AI座舱平台 / OneCoreGo 7.0</span></div>
+            <div class="rt-row"><span class="rt-bn">XPENG GX</span><span class="rt-bb">E2</span><span class="rt-nt">17.3" 3K / 33スピーカーAIオーディオ</span></div>
+            <div class="rt-row"><span class="rt-bn">MINIEYE</span><span class="rt-bb">E1</span><span class="rt-nt">AIエージェント「BamBam」</span></div>
+            <div class="rt-row"><span class="rt-bn">楚航科技</span><span class="rt-bb">B2</span><span class="rt-nt">60GHzミリ波車内センシング / CPD</span></div>
+            <div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W4</span><span class="rt-nt">LOUNZE+ / オーディオヘッドレスト</span></div>
+            <div class="rt-row"><span class="rt-bn">Astemo</span><span class="rt-bb">W1</span><span class="rt-nt">Immersive Theater</span></div>
+            <div class="rt-row"><span class="rt-bn">仁芯科技</span><span class="rt-bb">A1</span><span class="rt-nt">32Gbps SerDes（4K×4画面駆動）</span></div>
+            <div style="font-size:10px;color:var(--muted);background:var(--s3);border-radius:4px;padding:6px 8px;margin-top:6px"><b style="color:var(--accent)">トレンド：</b>AIエージェントが車内体験の中核。中央計算＋大型没入ディスプレイの一体化。</div>
+          </div>
+        </div>
+
+        <!-- Theme 2: Door Access -->
+        <div class="rt-card" onclick="this.classList.toggle('open')" style="margin-bottom:6px">
+          <div class="rt-hdr"><span class="rt-tag dr" style="margin-left:0;margin-right:6px">DOOR</span><b style="font-size:12px">ドアアクセス</b><span style="font-size:10px">Door &amp; Access</span><span class="rt-arr">▾</span></div>
+          <div class="rt-det">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">中国新安全規制 GB 48001—2026 が最大のドライバー</div>
+            <div class="rt-row"><span class="rt-bn">GB 48001—2026</span><span class="rt-bb">規制</span><span class="rt-nt">隠しハンドル禁止（2027/1施行予定）/ 機械式解放義務化</span></div>
+            <div class="rt-row"><span class="rt-bn">BMW iX3 LWB</span><span class="rt-bb">W4</span><span class="rt-nt">半隠し式ハンドル / 三重冗長</span></div>
+            <div class="rt-row"><span class="rt-bn">小米汽車</span><span class="rt-bb">A4</span><span class="rt-nt">対開きドア「無序開門」特許</span></div>
+            <div class="rt-row"><span class="rt-bn">Marelli</span><span class="rt-bb">W2</span><span class="rt-nt">MCUフリー・ドア・モジュール</span></div>
+            <div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W4</span><span class="rt-nt">シート連動ドアアクセス / 統合スイッチ</span></div>
+            <div class="rt-row"><span class="rt-bn">BAIC「北京81」</span><span class="rt-bb">E4</span><span class="rt-nt">観音門（対開きテールゲート）</span></div>
+            <div class="rt-row"><span class="rt-bn">デジタルキー</span><span class="rt-bb">全般</span><span class="rt-nt">BLE+UWB / BLE+NFC融合が主流</span></div>
+            <div style="font-size:10px;color:var(--muted);background:var(--s3);border-radius:4px;padding:6px 8px;margin-top:6px"><b style="color:var(--accent)">トレンド：</b>隠しハンドル→「半隠し＋機械式冗長」へシフト中。規制対応とデザイン両立が論点。</div>
+          </div>
+        </div>
+
+        <!-- Theme 3: Power Start -->
+        <div class="rt-card" onclick="this.classList.toggle('open')" style="margin-bottom:6px">
+          <div class="rt-hdr"><span class="rt-tag ev" style="margin-left:0;margin-right:6px;background:rgba(96,165,250,.12);color:var(--info)">START</span><b style="font-size:12px">車両電源ON</b><span style="font-size:10px">Power Start</span><span class="rt-arr">▾</span></div>
+          <div class="rt-det">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">無感起動が標準化。次のフロンティアは生体認証・ウェアラブル</div>
+            <div class="rt-row"><span class="rt-bn">無感啟動</span><span class="rt-bb">全般</span><span class="rt-nt">キー/スマホ近接→乗車→ブレーキ＋シフトで発進</span></div>
+            <div class="rt-row"><span class="rt-bn">小米汽車</span><span class="rt-bb">A4</span><span class="rt-nt">指紋・顔認証による起動を示唆</span></div>
+            <div class="rt-row"><span class="rt-bn">NexRing</span><span class="rt-bb">—</span><span class="rt-nt">スマートリング始動 / BYD・问界・奇瑞等数十車種</span></div>
+            <div style="font-size:10px;color:var(--muted);background:var(--s3);border-radius:4px;padding:6px 8px;margin-top:6px"><b style="color:var(--accent)">トレンド：</b>ボタン式→完全無感化完了。生体認証・ウェアラブルへ拡張段階。</div>
+          </div>
+        </div>
+
+        <!-- Access Info -->
+        <div style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--accent)">アクセス情報</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">南側入口（E列最寄り）</div>
+            <div style="font-size:12px;font-weight:500;margin-top:2px">地下鉄15号線「国展」駅 → E1直結</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">北側入口（A列最寄り）</div>
+            <div style="font-size:12px;font-weight:500;margin-top:2px">北登録庁 → A1直結</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">建物間移動</div>
+            <div style="font-size:12px;font-weight:500;margin-top:2px">南登録庁 ↔ 北登録庁 徒歩約5〜8分</div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
       </div>
 
       <!-- VIEW: Layout Map -->
-      <div class="map-view active" id="mv-layout">
+      <div class="map-view" id="mv-layout">
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 6px">
           <svg width="100%" viewBox="0 0 680 920" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:340px">
+            <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
             <rect x="60" y="30" width="560" height="460" rx="12" fill="none" stroke="#d4a832" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
             <text x="340" y="22" text-anchor="middle" font-size="11" font-weight="500" fill="#d4a832" opacity=".8">首都国際会展中心</text>
             <text x="340" y="54" text-anchor="middle" font-size="9" fill="#6b7280">▼ 北登録庁</text>
+            <text x="590" y="260" text-anchor="end" font-size="9" fill="#6b7280">East Entry →</text>
             <text x="340" y="480" text-anchor="middle" font-size="9" fill="#6b7280">▲ 南登録庁</text>
             <rect x="370" y="66" width="210" height="64" rx="6" fill="#d4a832" opacity=".18" stroke="#d4a832" stroke-width=".5" stroke-opacity=".4"/>
             <text x="475" y="95" text-anchor="middle" font-size="16" font-weight="700" fill="#d4a832">A1</text>
@@ -432,11 +509,13 @@ textarea{line-height:1.65}
             <text x="205" y="416" text-anchor="middle" font-size="9" fill="#4b5563">（対象外）</text>
             <line x1="240" y1="500" x2="240" y2="540" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 3"/>
             <line x1="440" y1="500" x2="440" y2="540" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 3"/>
-            <text x="340" y="525" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="500">▼ 建物間移動（徒歩5〜8分） ▼</text>
+            <text x="340" y="525" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="500">▼ 建物間の移動（徒歩5〜8分） ▼</text>
             <rect x="60" y="550" width="560" height="350" rx="12" fill="none" stroke="#60a5fa" stroke-width="1" stroke-dasharray="4 3" opacity=".35"/>
             <text x="340" y="542" text-anchor="middle" font-size="11" font-weight="500" fill="#60a5fa" opacity=".8">中国国際展覧中心（順義館）</text>
             <text x="340" y="568" text-anchor="middle" font-size="9" fill="#6b7280">▼ 北登録庁</text>
-            <text x="340" y="892" text-anchor="middle" font-size="9" fill="#6b7280">▲ 南登録庁 ＋ 🚇 国展駅</text>
+            <text x="590" y="720" text-anchor="end" font-size="9" fill="#6b7280">東登録庁 →</text>
+            <text x="90" y="720" text-anchor="start" font-size="9" fill="#6b7280">← 西登録庁</text>
+            <text x="340" y="892" text-anchor="middle" font-size="9" fill="#6b7280">▲ 南登録庁 ＋ 地下鉄15号線「国展」駅</text>
             <rect x="370" y="578" width="210" height="64" rx="6" fill="#60a5fa" opacity=".18" stroke="#60a5fa" stroke-width=".5" stroke-opacity=".4"/>
             <text x="475" y="607" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa">E4</text>
             <text x="475" y="624" text-anchor="middle" font-size="9" fill="#6b7280">Mercedes / BAIC</text>
@@ -462,66 +541,269 @@ textarea{line-height:1.65}
             <text x="205" y="841" text-anchor="middle" font-size="16" font-weight="700" fill="#60a5fa" opacity=".5">W1</text>
             <text x="205" y="858" text-anchor="middle" font-size="9" fill="#4b5563">サプライヤー</text>
             <rect x="290" y="898" width="100" height="18" rx="9" fill="#60a5fa" opacity=".2"/>
-            <text x="340" y="910" text-anchor="middle" font-size="9" font-weight="500" fill="#60a5fa">🚇 国展駅</text>
+            <text x="340" y="910" text-anchor="middle" font-size="9" font-weight="500" fill="#60a5fa">&#x1f687; 国展駅</text>
           </svg>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)">
           <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#d4a832"></span>首都国際会展（A・B列）</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa"></span>順義館（E・W列）</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#4b5563;opacity:.5"></span>薄色＝訪問対象外</span>
         </div>
+        <div style="height:20px"></div>
       </div>
 
       <!-- VIEW: South→North Route -->
       <div class="map-view" id="mv-route-s">
         <div class="rt-intro" style="border-left:3px solid var(--accent)">
-          <div style="font-weight:600;font-size:13px;margin-bottom:2px">南→北ルート（国展駅スタート）</div>
-          <div style="font-size:11px;color:var(--muted)">地下鉄15号線「国展」駅から直結。BYD・XPENGを朝一で確保し、上側建物へ北上</div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:2px">南→北コース：国展駅から出発</div>
+          <div style="font-size:11px;color:var(--muted)">地下鉄15号線→南登録庁→E1入場。朝一でBYD・XPENGなど人気ブースを混雑前に確保。</div>
         </div>
+
+        <!-- Tag legend -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px">
+          <span class="rt-tag ck" style="margin:0">COCKPIT</span>
+          <span class="rt-tag dr" style="margin:0">DOOR</span>
+          <span class="rt-tag ev" style="margin:0">EV</span>
+          <span class="rt-tag ad" style="margin:0">ADAS</span>
+          <span style="display:inline-block;font-size:8px;font-weight:500;letter-spacing:.04em;padding:1px 5px;border-radius:3px;background:rgba(96,165,250,.12);color:var(--info)">START</span>
+        </div>
+
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa"></span>下側建物：中国国際展覧中心（順義館）</div>
+
         <div class="rt-list">
-          <div class="rt-step"><span class="rt-dot s">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span></div><div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div><div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div><div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div><div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div><div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div><div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div><div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div><div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI / 後席VLM<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京81 観音門<span class="rt-tag dr">DOOR</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">W3 → 華為乾崑 → W4 BMW・紡織</div></div>
-          <div class="rt-step"><span class="rt-dot s">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div><div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">建物間移動（徒歩5〜8分）昼食休憩推奨</div></div>
-          <div class="rt-step"><span class="rt-dot s">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A101</span><span class="rt-nt">MIX / 007GT<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div><div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A102</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div><div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot s">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div><div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot s">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span><span class="rt-nt">華為系ブランド</span></div>
+            <div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div>
+            <div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div>
+            <div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-note"><b>注意①：</b>奇瑞グループ傘下。MINIEYEのAIエージェントは智能座舱トレンドを確認する最初の機会。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div>
+            <div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span><span class="rt-nt">華為系</span></div>
+            <div class="rt-note"><b>注意②：</b>XPENG GXの33スピーカーAIオーディオ（8個ヘッドレスト搭載）は座舱技術の実演として重要。時間多めに確保。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div>
+            <div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div>
+            <div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div>
+            <div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div>
+            <div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-row"><span class="rt-bn">BYD 閃充</span><span class="rt-bb">E304</span><span class="rt-nt">超急速充電<span class="rt-tag ev">EV</span></span></div>
+            <div class="rt-note"><b>注意③：</b>BYDホール丸ごと（6ブランド）。事前に優先順位を決定。NexRingスマートリング始動もBYD対応。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI統合 / 後席エッジVLM<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京越野 / 「北京81」観音門<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意④：</b>MB.OSの後席VLMは中国チーム開発品。「北京81」観音門テールゲートはドアテーマの注目展示。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">E4 → W3（同建物内・北側を横切って西列へ）</div></div>
+
+          <div class="rt-step"><span class="rt-dot s">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑｜啓境</span><span class="rt-bb">W304</span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑｜奕境</span><span class="rt-bb">W305</span></div>
+            <div class="rt-note"><b>注意⑤：</b>Huaweiの車載PF戦略を横断把握。E2の问界、後のB4鸿蒙智行と合わせてHuawei陣営の全体像を整理。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+ / オーディオヘッドレスト / シート連動ドア<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意⑥：</b>ドアアクセステーマ2社同時確認。BMWの半隠し式＋三重冗長はGB 48001—2026への回答。LOUNZE+のシート回転連動も要注目。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">下側建物 → 上側建物へ徒歩移動（約5〜8分・昼食休憩推奨）</div></div>
+
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:8px 0;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#d4a832"></span>上側建物：首都国際会展中心</div>
+
+          <div class="rt-step"><span class="rt-dot s">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A102</span></div>
+            <div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div>
+            <div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A104</span></div>
+            <div class="rt-note"><b>注意⑦：</b>吉利グループ3ブランド同一ホール。仁芯科技（A109）32Gbps SerDesチップ<span class="rt-tag ck">COCKPIT</span>も要チェック。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div>
+            <div class="rt-note"><b>注意⑧：</b>東風汽車（A301）も同ホール。東風奕派納米01 Crossのフレームレスドア<span class="rt-tag dr">DOOR</span>確認可能。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div>
+            <div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動 / 「無序開門」対開きドア特許<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意⑨：</b>小米は電源ON（生体認証）とドア（無序開門特許）の両テーマに該当。技術テーマ横串確認の重要ブース。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">A4 → B3（同建物内・A列からB列へ移動）</div></div>
+
+          <div class="rt-step"><span class="rt-dot s">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div>
+            <div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div>
+            <div class="rt-note"><b>注意⑩：</b>同ホールにトヨタ（B305）/レクサス（B306）。MediaTek（B310）、Horizon Robotics（B312）等も。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot s">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-note"><b>注意⑪：</b>W3のAVATR・華為乾崑と合わせてHuawei陣営を前半・後半で見比べ。東軟Neusoft（B411）NAGIC.AI座舱平台<span class="rt-tag ck">COCKPIT</span>も同ホール。</div>
+          </div></div></div>
         </div>
+        <div style="height:20px"></div>
       </div>
 
       <!-- VIEW: North→South Route -->
       <div class="map-view" id="mv-route-n">
         <div class="rt-intro" style="border-left:3px solid var(--info)">
-          <div style="font-weight:600;font-size:13px;margin-bottom:2px">北→南ルート（北門スタート）</div>
-          <div style="font-size:11px;color:var(--muted)">上側建物・北登録庁からスタート。午後にE列に到達し混雑を回避</div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:2px">北→南コース：北門から出発</div>
+          <div style="font-size:11px;color:var(--muted)">車来場・北登録庁から入場。A・B列を午前に消化→昼休憩→E・W列。BYD午前混雑を回避。帰路は国展駅へ。</div>
         </div>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px">
+          <span class="rt-tag ck" style="margin:0">COCKPIT</span>
+          <span class="rt-tag dr" style="margin:0">DOOR</span>
+          <span class="rt-tag ev" style="margin:0">EV</span>
+          <span class="rt-tag ad" style="margin:0">ADAS</span>
+          <span style="display:inline-block;font-size:8px;font-weight:500;letter-spacing:.04em;padding:1px 5px;border-radius:3px;background:rgba(96,165,250,.12);color:var(--info)">START</span>
+        </div>
+
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#d4a832"></span>上側建物：首都国際会展中心</div>
+
         <div class="rt-list">
-          <div class="rt-step"><span class="rt-dot n">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A101</span><span class="rt-nt">MIX / 007GT<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div><div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A102</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div><div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+          <div class="rt-step"><span class="rt-dot n">1</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A1</b><span>ZEEKR / LYNK&amp;CO / 吉利銀河</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">極氪 ZEEKR</span><span class="rt-bb">A102</span></div>
+            <div class="rt-row"><span class="rt-bn">領克 LYNK&amp;CO</span><span class="rt-bb">A103</span></div>
+            <div class="rt-row"><span class="rt-bn">吉利銀河</span><span class="rt-bb">A104</span></div>
+            <div class="rt-note"><b>注意①：</b>吉利グループ3ブランド同一ホール。仁芯科技（A109）32Gbps SerDesチップ<span class="rt-tag ck">COCKPIT</span>も同ホール。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">2</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A3</b><span>GAC / 東風</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">GAC 広汽集団</span><span class="rt-bb">A307-308</span><span class="rt-nt">伝祺 / AION / Hyptec</span></div>
+            <div class="rt-note"><b>注意②：</b>東風汽車（A301）も同ホール。東風奕派納米01 Crossのフレームレスドア<span class="rt-tag dr">DOOR</span>確認可能。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">3</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>A4</b><span>Li Auto / 小米</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">理想 Li Auto</span><span class="rt-bb">A401</span></div>
+            <div class="rt-row"><span class="rt-bn">小米 Xiaomi</span><span class="rt-bb">A402</span><span class="rt-nt">生体認証起動 / 「無序開門」対開きドア特許<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意③：</b>小米は電源ONとドアの両テーマに該当する重要ブース。</div>
+          </div></div></div>
+
           <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">A4 → B3（同建物内移動）</div></div>
-          <div class="rt-step"><span class="rt-dot n">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div><div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">建物間移動（徒歩5〜8分）昼食休憩推奨</div></div>
-          <div class="rt-step"><span class="rt-dot n">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div><div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div><div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">W3 → E4（同建物内・北側横切り）</div></div>
-          <div class="rt-step"><span class="rt-dot n">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI / 後席VLM<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京81 観音門<span class="rt-tag dr">DOOR</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div><div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div><div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div><div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div><div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div><div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div><div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span></div></div></div></div>
-          <div class="rt-step"><span class="rt-dot n">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det"><div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span></div><div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div><div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div><div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div></div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">4</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B3</b><span>長安 / Deepal</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">長安汽車</span><span class="rt-bb">B301</span></div>
+            <div class="rt-row"><span class="rt-bn">深藍 Deepal</span><span class="rt-bb">B302</span></div>
+            <div class="rt-note"><b>注意④：</b>トヨタ（B305）/レクサス（B306）。MediaTek（B310）、Horizon Robotics（B312）も同ホール。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">5</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>B4</b><span>鸿蒙智行</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">鸿蒙智行</span><span class="rt-bb">B406</span><span class="rt-nt">Huaweiエコ統合展示<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-note"><b>注意⑤：</b>東軟Neusoft（B411）NAGIC.AI座舱平台<span class="rt-tag ck">COCKPIT</span>も同ホール。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">建物間移動（徒歩5〜8分・昼食休憩推奨）</div></div>
+
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:8px 0;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa"></span>下側建物：中国国際展覧中心（順義館）</div>
+
+          <div class="rt-step"><span class="rt-dot n">6</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W4</b><span>BMW / トヨタ紡織</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">BMW / MINI</span><span class="rt-bb">W402-403</span><span class="rt-nt">iX3 LWB 半隠し式ハンドル<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-row"><span class="rt-bn">トヨタ紡織</span><span class="rt-bb">W405</span><span class="rt-nt">LOUNZE+ / シート連動ドアアクセス<span class="rt-tag ck">COCKPIT</span><span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意⑥：</b>ドアアクセステーマ2社同時確認。BMWの半隠し式＋三重冗長はGB 48001—2026への回答。LOUNZE+のシート回転連動も要注目。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">7</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>W3</b><span>AVATR / 華為乾崑</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">阿維塔 AVATR</span><span class="rt-bb">W303</span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑</span><span class="rt-bb">W301</span><span class="rt-nt">車載PF中核<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑｜啓境</span><span class="rt-bb">W304</span></div>
+            <div class="rt-row"><span class="rt-bn">華為乾崑｜奕境</span><span class="rt-bb">W305</span></div>
+            <div class="rt-note"><b>注意⑦：</b>Huawei車載PFの技術スタック詳細。B4の鸿蒙智行で見た全体像と合わせて確認。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot xf">▸</span><div class="rt-xfer">W3 → E4（同建物内・北側を横切って東列へ）</div></div>
+
+          <div class="rt-step"><span class="rt-dot n">8</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E4</b><span>Mercedes / BAIC</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">Mercedes-Benz</span><span class="rt-bb">E402</span><span class="rt-nt">MB.OS AI統合 / 後席VLM<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">BAIC 北汽集団</span><span class="rt-bb">E403</span><span class="rt-nt">享界 / 極狐 / 北京81 観音門<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-note"><b>注意⑧：</b>MB.OSの後席VLMは中国チーム開発品。BAICの「北京81」観音門テールゲートはドアテーマの注目展示。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">9</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E3</b><span>BYD全ブランド</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">比亜迪 BYD</span><span class="rt-bb">E302</span><span class="rt-nt">ホール全体占有<span class="rt-tag ev">EV</span></span></div>
+            <div class="rt-row"><span class="rt-bn">騰勢 DENZA</span><span class="rt-bb">E301</span></div>
+            <div class="rt-row"><span class="rt-bn">方程豹</span><span class="rt-bb">E305</span></div>
+            <div class="rt-row"><span class="rt-bn">仰望 YANGWANG</span><span class="rt-bb">E303</span></div>
+            <div class="rt-row"><span class="rt-bn">天神之眼</span><span class="rt-bb">E306</span><span class="rt-nt">BYD ADAS<span class="rt-tag ad">ADAS</span></span></div>
+            <div class="rt-row"><span class="rt-bn">BYD 閃充</span><span class="rt-bb">E304</span><span class="rt-nt">超急速充電<span class="rt-tag ev">EV</span></span></div>
+            <div class="rt-note"><b>注意⑨：</b>午後到着のためBYD混雑は午前より緩和。6ブランド展示。NexRingスマートリング始動も確認。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">10</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E2</b><span>XPENG / NIO / 问界</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">小鹏 XPENG</span><span class="rt-bb">E202</span><span class="rt-nt">GX：17.3" 3K / 33スピーカーAI<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">蔚来 NIO</span><span class="rt-bb">E203</span><span class="rt-nt">ONVO / firefly 含む3ブランド</span></div>
+            <div class="rt-row"><span class="rt-bn">问界 AITO</span><span class="rt-bb">E201</span></div>
+            <div class="rt-note"><b>注意⑩：</b>XPENG GXの33スピーカーAIオーディオは座舱技術の集大成。W3・B4で見たHuawei系と並べて比較する最後の機会。</div>
+          </div></div></div>
+
+          <div class="rt-step"><span class="rt-dot n">11</span><div class="rt-card" onclick="this.classList.toggle('open')"><div class="rt-hdr"><b>E1</b><span>LUXEED / CHERY / EXEED / MINIEYE</span><span class="rt-arr">▾</span></div><div class="rt-det">
+            <div class="rt-row"><span class="rt-bn">智界 LUXEED</span><span class="rt-bb">E106</span></div>
+            <div class="rt-row"><span class="rt-bn">奇瑞 CHERY</span><span class="rt-bb">E105</span></div>
+            <div class="rt-row"><span class="rt-bn">星途 EXEED</span><span class="rt-bb">E102</span></div>
+            <div class="rt-row"><span class="rt-bn">佑驾創新 MINIEYE</span><span class="rt-bb">E110</span><span class="rt-nt">AIエージェント「BamBam」<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-note"><b>注意⑪：</b>最終ステップで国展駅最寄りのE1に到着。MINIEYEのBamBamは座舱テーマの締め。帰りはそのまま南登録庁→国展駅へ。</div>
+          </div></div></div>
         </div>
+        <div style="height:20px"></div>
+      </div>
+
+      <!-- VIEW: Extra (Summary + Suppliers) -->
+      <div class="map-view" id="mv-extra">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--accent)">ルート比較</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">訪問ホール</div>
+            <div style="font-size:18px;font-weight:700;font-family:var(--mono)">11</div>
+            <div style="font-size:10px;color:var(--muted)">2建物 × 11ホール</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">重点メーカー</div>
+            <div style="font-size:18px;font-weight:700;font-family:var(--mono)">20</div>
+            <div style="font-size:10px;color:var(--muted)">全メーカーカバー</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">南→北のメリット</div>
+            <div style="font-size:12px;font-weight:500;margin-top:2px">朝一でBYD・XPENG</div>
+            <div style="font-size:10px;color:var(--muted)">人気ブースを混雑前に確保</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">北→南のメリット</div>
+            <div style="font-size:12px;font-weight:500;margin-top:2px">午後にE列で混雑回避</div>
+            <div style="font-size:10px;color:var(--muted)">帰路は国展駅へ直接南下</div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--accent)">ルート外のサプライヤー（寄り道候補）</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">B1・B2・W1・W2エリア。時間に余裕がある場合の候補。</div>
+
+        <div class="rt-card" style="margin-bottom:0">
+          <div class="rt-det" style="display:block;border-top:none;padding-top:0">
+            <div class="rt-row"><span class="rt-bn">Harman</span><span class="rt-bb">B2</span><span class="rt-nt">CCU「Ready」/ 量子ドット / Ready Vision QVUE<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">楚航科技</span><span class="rt-bb">B2</span><span class="rt-nt">60GHz車内ミリ波レーダー / CPD<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">Marelli</span><span class="rt-bb">W2</span><span class="rt-nt">MCUフリー・ドア・モジュール<span class="rt-tag dr">DOOR</span></span></div>
+            <div class="rt-row"><span class="rt-bn">Astemo</span><span class="rt-bb">W1</span><span class="rt-nt">「Immersive Theater」<span class="rt-tag ck">COCKPIT</span></span></div>
+            <div class="rt-row"><span class="rt-bn">HERE Technologies</span><span class="rt-bb">A4</span><span class="rt-nt">AI地図・位置情報PF / L2++/L3向け<span class="rt-tag ad">ADAS</span></span></div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
       </div>
 
     </div>
   </div>
 
-  <!-- ══ SETTINGS ══ -->
+    <!-- ══ SETTINGS ══ -->
   <div id="panel-settings" class="panel">
     <div class="sg">
       <div class="sg-title">環境プロファイル</div>
@@ -1377,6 +1659,8 @@ function switchMapView(id,btn){
   document.querySelectorAll('.map-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('mv-'+id).classList.add('active');
   btn.classList.add('active');
+  // Scroll panel to top when switching map tab
+  document.getElementById('panel-map').scrollTop=0;
 }
 
 // ============================================================
