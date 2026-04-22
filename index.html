@@ -21,8 +21,8 @@
   --sans:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --hdr:50px;--nav:58px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
-#app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:640px;margin:0 auto;overflow:hidden}
+html,body{height:100%;height:-webkit-fill-available;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;max-width:640px;margin:0 auto;overflow:hidden;position:relative}
 
 header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--s1)}
 .logo{font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--accent);font-weight:500}
@@ -34,14 +34,14 @@ header{height:var(--hdr);flex-shrink:0;display:flex;align-items:center;justify-c
 .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.warn{background:var(--accent)}
 
-.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:20px;overscroll-behavior:contain}
+.panel{flex:1;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain;min-height:0}
 .panel.active{display:block}
 
-.tabbar{flex-shrink:0;flex-grow:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border);background:var(--s1);position:relative;z-index:20}
+.tabbar{flex-shrink:0;flex-grow:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--border);background:var(--s1);position:relative;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabbar button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .15s;-webkit-tap-highlight-color:transparent;letter-spacing:.02em;padding:8px 0}
 .tabbar button.active{color:var(--accent)}
 .tabbar button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.safe-area-bottom{flex-shrink:0;height:env(safe-area-inset-bottom,0px);background:var(--s1)}
+.safe-area-bottom{flex-shrink:0;height:0;background:var(--s1)}
 
 .field{padding:12px 16px;border-bottom:1px solid var(--border)}
 .field-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
